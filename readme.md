@@ -56,6 +56,11 @@ Big thanks to these companies for supporting the project.
     <img width="480" src="https://www.bookstackapp.com/images/sponsors/diagramsnet.png" alt="Diagrams.net">
 </a></td>
 </tr>
+<tr>
+<td align="center"><a href="https://www.onyx.app/?utm_source=bookstack" target="_blank">
+    <img width="420" src="https://www.bookstackapp.com/images/sponsors/onyx.png" alt="onyx.app">
+</a></td>
+</tr>
 </tbody></table>
 
 #### Bronze Sponsors
