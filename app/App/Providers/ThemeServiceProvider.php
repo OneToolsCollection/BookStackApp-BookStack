@@ -4,7 +4,9 @@ namespace BookStack\App\Providers;
 
 use BookStack\Theming\ThemeEvents;
 use BookStack\Theming\ThemeService;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\View;
 
 class ThemeServiceProvider extends ServiceProvider
 {
@@ -24,8 +26,17 @@ class ThemeServiceProvider extends ServiceProvider
     {
         // Boot up the theme system
         $themeService = $this->app->make(ThemeService::class);
-        $themeService->registerViewPathsForTheme($this->app->make('view')->getFinder());
-        $themeService->readThemeActions();
-        $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
+
+        $viewFactory = $this->app->make('view');
+        $themeService->registerViewPathsForTheme($viewFactory->getFinder());
+
+        if ($themeService->logicalThemeIsActive()) {
+            $themeService->readThemeActions();
+            $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
+            $viewFactory->share('__theme', $themeService);
+            Blade::directive('include', function ($expression) {
+                return "<?php echo \$__theme->handleViewInclude({$expression}, array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1])); ?>";
+            });
+        }
     }
 }
