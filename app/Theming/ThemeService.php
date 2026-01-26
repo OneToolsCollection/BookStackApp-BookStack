@@ -6,6 +6,7 @@ use BookStack\Access\SocialDriverManager;
 use BookStack\Exceptions\ThemeException;
 use Illuminate\Console\Application;
 use Illuminate\Console\Application as Artisan;
+use Illuminate\View\FileViewFinder;
 use Symfony\Component\Console\Command\Command;
 
 class ThemeService
@@ -88,6 +89,15 @@ class ThemeService
                 throw new ThemeException("Failed loading theme functions file at \"{$themeActionsFile}\" with error: {$exception->getMessage()}");
             }
         }
+    }
+
+    /**
+     * Register any extra paths for where we may expect views to be located
+     * with the provided FileViewFinder, to make custom views available for use.
+     */
+    public function registerViewPathsForTheme(FileViewFinder $finder): void
+    {
+        $finder->prependLocation(theme_path());
     }
 
     /**

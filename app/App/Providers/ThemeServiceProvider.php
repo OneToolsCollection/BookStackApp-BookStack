@@ -24,6 +24,7 @@ class ThemeServiceProvider extends ServiceProvider
     {
         // Boot up the theme system
         $themeService = $this->app->make(ThemeService::class);
+        $themeService->registerViewPathsForTheme($this->app->make('view')->getFinder());
         $themeService->readThemeActions();
         $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
     }
