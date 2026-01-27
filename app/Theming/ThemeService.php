@@ -17,16 +17,6 @@ class ThemeService
     protected array $listeners = [];
 
     /**
-     * @var array<string, array<string, int>>
-     */
-    protected array $beforeViews = [];
-
-    /**
-     * @var array<string, array<string, int>>
-     */
-    protected array $afterViews = [];
-
-    /**
      * Get the currently configured theme.
      * Returns an empty string if not configured.
      */
@@ -92,29 +82,15 @@ class ThemeService
     public function readThemeActions(): void
     {
         $themeActionsFile = theme_path('functions.php');
+        if (!$themeActionsFile || !file_exists($themeActionsFile)) {
+            return;
+        }
+
         try {
             require $themeActionsFile;
         } catch (\Error $exception) {
             throw new ThemeException("Failed loading theme functions file at \"{$themeActionsFile}\" with error: {$exception->getMessage()}");
         }
-    }
-
-    /**
-     * Check if a logical theme is active.
-     */
-    public function logicalThemeIsActive(): bool
-    {
-        $themeActionsFile = theme_path('functions.php');
-        return $themeActionsFile && file_exists($themeActionsFile);
-    }
-
-    /**
-     * Register any extra paths for where we may expect views to be located
-     * with the provided FileViewFinder, to make custom views available for use.
-     */
-    public function registerViewPathsForTheme(FileViewFinder $finder): void
-    {
-        $finder->prependLocation(theme_path());
     }
 
     /**
@@ -124,64 +100,5 @@ class ThemeService
     {
         $driverManager = app()->make(SocialDriverManager::class);
         $driverManager->addSocialDriver($driverName, $config, $socialiteHandler, $configureForRedirect);
-    }
-
-    /**
-     * Provide the response for a blade template view include.
-     */
-    public function handleViewInclude(string $viewPath, array $data = []): string
-    {
-        $viewsContent = [
-            ...$this->renderViewSets($this->beforeViews[$viewPath] ?? [], $data),
-            view()->make($viewPath, $data)->render(),
-            ...$this->renderViewSets($this->afterViews[$viewPath] ?? [], $data),
-        ];
-
-        return implode("\n", $viewsContent);
-    }
-
-    /**
-     * Register a custom view to be rendered before the given target view is included in the template system.
-     */
-    public function registerViewToRenderBefore(string $targetView, string $localView, int $priority = 50): void
-    {
-        $this->registerAdjacentView($this->beforeViews, $targetView, $localView, $priority);
-    }
-
-    /**
-     * Register a custom view to be rendered after the given target view is included in the template system.
-     */
-    public function registerViewToRenderAfter(string $targetView, string $localView, int $priority = 50): void
-    {
-        $this->registerAdjacentView($this->afterViews, $targetView, $localView, $priority);
-    }
-
-    protected function registerAdjacentView(array &$location, string $targetView, string $localView, int $priority = 50): void
-    {
-        $viewPath = theme_path($localView . '.blade.php');
-        if (!file_exists($viewPath)) {
-            throw new ThemeException("Expected registered view file at \"{$viewPath}\" does not exist");
-        }
-
-        if (!isset($location[$targetView])) {
-            $location[$targetView] = [];
-        }
-        $location[$targetView][$viewPath] = $priority;
-    }
-
-    /**
-     * @param array<string, int> $viewSet
-     * @return string[]
-     */
-    protected function renderViewSets(array $viewSet, array $data): array
-    {
-        $paths = array_keys($viewSet);
-        usort($paths, function (string $a, string $b) use ($viewSet) {
-            return $viewSet[$a] <=> $viewSet[$b];
-        });
-
-        return array_map(function (string $viewPath) use ($data) {
-            return view()->file($viewPath, $data)->render();
-        }, $paths);
     }
 }

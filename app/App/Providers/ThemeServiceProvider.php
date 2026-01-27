@@ -4,9 +4,9 @@ namespace BookStack\App\Providers;
 
 use BookStack\Theming\ThemeEvents;
 use BookStack\Theming\ThemeService;
+use BookStack\Theming\ThemeViews;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\View;
 
 class ThemeServiceProvider extends ServiceProvider
 {
@@ -26,16 +26,21 @@ class ThemeServiceProvider extends ServiceProvider
     {
         // Boot up the theme system
         $themeService = $this->app->make(ThemeService::class);
-
         $viewFactory = $this->app->make('view');
-        $themeService->registerViewPathsForTheme($viewFactory->getFinder());
+        if (!$themeService->getTheme()) {
+            return;
+        }
 
-        if ($themeService->logicalThemeIsActive()) {
-            $themeService->readThemeActions();
-            $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
-            $viewFactory->share('__theme', $themeService);
+        $themeService->readThemeActions();
+        $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
+
+        $themeViews = new ThemeViews();
+        $themeService->dispatch(ThemeEvents::THEME_REGISTER_VIEWS, $themeViews);
+        $themeViews->registerViewPathsForTheme($viewFactory->getFinder());
+        if ($themeViews->hasRegisteredViews()) {
+            $viewFactory->share('__themeViews', $themeViews);
             Blade::directive('include', function ($expression) {
-                return "<?php echo \$__theme->handleViewInclude({$expression}, array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1])); ?>";
+                return "<?php echo \$__themeViews->handleViewInclude({$expression}, array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1])); ?>";
             });
         }
     }

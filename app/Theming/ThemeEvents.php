@@ -134,6 +134,16 @@ class ThemeEvents
      */
     const ROUTES_REGISTER_WEB_AUTH = 'routes_register_web_auth';
 
+
+    /**
+     * Theme register views event.
+     * Called by the theme system when a theme is active, so that custom view templates can be registered
+     * to be rendered in addition to existing app views.
+     *
+     * @param \BookStack\Theming\ThemeViews $themeViews
+     */
+    const THEME_REGISTER_VIEWS = 'theme_register_views';
+
     /**
      * Web before middleware action.
      * Runs before the request is handled but after all other middleware apart from those
