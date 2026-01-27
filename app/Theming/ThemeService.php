@@ -143,7 +143,7 @@ class ThemeService
     /**
      * Register a custom view to be rendered before the given target view is included in the template system.
      */
-    public function registerViewRenderBefore(string $targetView, string $localView, int $priority = 50): void
+    public function registerViewToRenderBefore(string $targetView, string $localView, int $priority = 50): void
     {
         $this->registerAdjacentView($this->beforeViews, $targetView, $localView, $priority);
     }
@@ -151,7 +151,7 @@ class ThemeService
     /**
      * Register a custom view to be rendered after the given target view is included in the template system.
      */
-    public function registerViewRenderAfter(string $targetView, string $localView, int $priority = 50): void
+    public function registerViewToRenderAfter(string $targetView, string $localView, int $priority = 50): void
     {
         $this->registerAdjacentView($this->afterViews, $targetView, $localView, $priority);
     }

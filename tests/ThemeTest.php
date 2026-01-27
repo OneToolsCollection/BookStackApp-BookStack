@@ -492,6 +492,38 @@ END;
         });
     }
 
+    public function test_register_view_to_render_before_and_after()
+    {
+        $this->usingThemeFolder(function (string $folder) {
+            $before = 'this-is-my-before-header-string';
+            $afterA = 'this-is-my-after-header-string-a';
+            $afterB = 'this-is-my-after-header-string-b';
+            $afterC = 'this-is-my-after-header-string-{{ 1+51 }}';
+
+            $functionsContent = <<<'CONTENT'
+<?php use BookStack\Facades\Theme;
+Theme::registerViewToRenderBefore('layouts.parts.header', 'before', 4);
+Theme::registerViewToRenderAfter('layouts.parts.header', 'after-a', 4);
+Theme::registerViewToRenderAfter('layouts.parts.header', 'after-b', 1);
+Theme::registerViewToRenderAfter('layouts.parts.header', 'after-c', 12);
+CONTENT;
+
+            $viewDir = theme_path();
+            file_put_contents($viewDir . '/functions.php', $functionsContent);
+            file_put_contents($viewDir . '/before.blade.php', $before);
+            file_put_contents($viewDir . '/after-a.blade.php', $afterA);
+            file_put_contents($viewDir . '/after-b.blade.php', $afterB);
+            file_put_contents($viewDir . '/after-c.blade.php', $afterC);
+
+            $this->refreshApplication();
+
+            $resp = $this->get('/login');
+            $resp->assertSee($before);
+            // Ensure ordering of the multiple after views
+            $resp->assertSee($afterB . "\n" . $afterA . "\nthis-is-my-after-header-string-52");
+        });
+    }
+
     protected function usingThemeFolder(callable $callback)
     {
         // Create a folder and configure a theme
