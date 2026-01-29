@@ -528,3 +528,5 @@ serinf-lauza :: French
 Diyan Nikolaev (nikolaev.diyan) :: Bulgarian
 Shadluk Avan (quldosh) :: Uzbek
 Marci (MartonPoto) :: Hungarian
+Michał Sadurski (wheeskeey) :: Polish
+JanDziaslo :: Polish

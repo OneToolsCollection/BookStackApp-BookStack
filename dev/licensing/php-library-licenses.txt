@@ -237,21 +237,21 @@ Link: https://config.thephpleague.com
 league/flysystem
 License: MIT
 License File: vendor/league/flysystem/LICENSE
-Copyright: Copyright (c) 2013-2024 Frank de Jonge
+Copyright: Copyright (c) 2013-2026 Frank de Jonge
 Source: https://github.com/thephpleague/flysystem.git
 Link: https://github.com/thephpleague/flysystem.git
 -----------
 league/flysystem-aws-s3-v3
 License: MIT
 License File: vendor/league/flysystem-aws-s3-v3/LICENSE
-Copyright: Copyright (c) 2013-2024 Frank de Jonge
+Copyright: Copyright (c) 2013-2026 Frank de Jonge
 Source: https://github.com/thephpleague/flysystem-aws-s3-v3.git
 Link: https://github.com/thephpleague/flysystem-aws-s3-v3.git
 -----------
 league/flysystem-local
 License: MIT
 License File: vendor/league/flysystem-local/LICENSE
-Copyright: Copyright (c) 2013-2024 Frank de Jonge
+Copyright: Copyright (c) 2013-2026 Frank de Jonge
 Source: https://github.com/thephpleague/flysystem-local.git
 Link: https://github.com/thephpleague/flysystem-local.git
 -----------
@@ -323,7 +323,7 @@ License: MIT
 License File: vendor/nesbot/carbon/LICENSE
 Copyright: Copyright (C) Brian Nesbitt
 Source: https://github.com/CarbonPHP/carbon.git
-Link: https://carbon.nesbot.com
+Link: https://carbonphp.github.io/carbon/
 -----------
 nette/schema
 License: BSD-3-Clause GPL-2.0-only GPL-3.0-only
