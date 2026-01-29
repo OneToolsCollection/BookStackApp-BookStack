@@ -24,7 +24,8 @@ class ApiAuthTest extends TestCase
 
         $this->actingAs($viewer, 'standard');
 
-        $resp = $this->get($this->endpoint);
+        $this->startSession();
+        $resp = $this->withCredentials()->get($this->endpoint);
         $resp->assertStatus(200);
     }
 
@@ -75,6 +76,7 @@ class ApiAuthTest extends TestCase
     {
         $editor = $this->users->editor();
         $this->actingAs($editor, 'standard');
+        $this->startSession();
 
         $resp = $this->get($this->endpoint);
         $resp->assertStatus(200);
@@ -116,6 +118,7 @@ class ApiAuthTest extends TestCase
     {
         $user = $this->users->admin();
         $this->actingAs($user, 'standard');
+        $this->startSession();
 
         $uriByMethods = [
             'POST' => '/books',

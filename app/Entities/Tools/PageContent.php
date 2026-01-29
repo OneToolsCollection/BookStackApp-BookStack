@@ -318,7 +318,7 @@ class PageContent
         }
 
         if (!config('app.allow_content_scripts')) {
-            HtmlContentFilter::removeScriptsFromDocument($doc);
+            HtmlContentFilter::removeActiveContentFromDocument($doc);
         }
 
         return $doc->getBodyInnerHtml();

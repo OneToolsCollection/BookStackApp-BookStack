@@ -82,7 +82,7 @@ class Comment extends Model implements Loggable, OwnableInterface
 
     public function safeHtml(): string
     {
-        return HtmlContentFilter::removeScriptsFromHtmlString($this->html ?? '');
+        return HtmlContentFilter::removeActiveContentFromHtmlString($this->html ?? '');
     }
 
     public function jointPermissions(): HasMany

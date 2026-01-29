@@ -30,9 +30,9 @@ class ApiAuthenticate
      */
     protected function ensureAuthorizedBySessionOrToken(Request $request): void
     {
-        // Return if the user is already found to be signed in via session-based auth.
-        // This is to make it easy to browse the API via browser when exploring endpoints via the UI.
-        if (!user()->isGuest() || session()->isStarted()) {
+        // Use the active user session already exists.
+        // This is to make it easy to explore API endpoints via the UI.
+        if (session()->isStarted()) {
             // Ensure the user has API access permission
             if (!$this->sessionUserHasApiAccess()) {
                 throw new ApiAuthException(trans('errors.api_user_no_api_permission'), 403);
@@ -49,7 +49,7 @@ class ApiAuthenticate
         // Set our api guard to be the default for this request lifecycle.
         auth()->shouldUse('api');
 
-        // Validate the token and it's users API access
+        // Validate the token and its users API access
         auth()->authenticate();
     }
 

@@ -50,7 +50,7 @@ class EntityHtmlDescription
             return $html;
         }
 
-        return HtmlContentFilter::removeScriptsFromHtmlString($html);
+        return HtmlContentFilter::removeActiveContentFromHtmlString($html);
     }
 
     public function getPlain(): string
