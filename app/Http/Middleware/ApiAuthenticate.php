@@ -17,7 +17,7 @@ class ApiAuthenticate
     public function handle(Request $request, Closure $next)
     {
         // Validate the token and it's users API access
-        $this->ensureAuthorizedBySessionOrToken();
+        $this->ensureAuthorizedBySessionOrToken($request);
 
         return $next($request);
     }
@@ -28,13 +28,19 @@ class ApiAuthenticate
      *
      * @throws ApiAuthException
      */
-    protected function ensureAuthorizedBySessionOrToken(): void
+    protected function ensureAuthorizedBySessionOrToken(Request $request): void
     {
         // Return if the user is already found to be signed in via session-based auth.
-        // This is to make it easy to browser the API via browser after just logging into the system.
+        // This is to make it easy to browse the API via browser when exploring endpoints via the UI.
         if (!user()->isGuest() || session()->isStarted()) {
+            // Ensure the user has API access permission
             if (!$this->sessionUserHasApiAccess()) {
                 throw new ApiAuthException(trans('errors.api_user_no_api_permission'), 403);
+            }
+
+            // Only allow GET requests for cookie-based API usage
+            if ($request->method() !== 'GET') {
+                throw new ApiAuthException(trans('errors.api_cookie_auth_only_get'), 403);
             }
 
             return;
