@@ -6,17 +6,20 @@ use BookStack\Exceptions\ThemeException;
 
 class ThemeModule
 {
-    protected string $name;
-    protected string $description;
-    protected string $folderName;
-    protected string $version;
+    public function __construct(
+        public readonly string $name,
+        public readonly string $description,
+        public readonly string $folderName,
+        public readonly string $version,
+    ) {
+    }
 
     /**
      * Create a ThemeModule instance from JSON data.
      *
      * @throws ThemeException
      */
-    public static function fromJson(array $data, string $folderName): static
+    public static function fromJson(array $data, string $folderName): self
     {
         if (empty($data['name']) || !is_string($data['name'])) {
             throw new ThemeException("Module in folder \"{$folderName}\" is missing a valid 'name' property");
@@ -34,13 +37,12 @@ class ThemeModule
             throw new ThemeException("Module in folder \"{$folderName}\" has an invalid 'version' format. Expected semantic version format like '1.0.0' or 'v1.0.0'");
         }
 
-        $module = new static();
-        $module->name = $data['name'];
-        $module->description = $data['description'];
-        $module->folderName = $folderName;
-        $module->version = $data['version'];
-
-        return $module;
+        return new self(
+            name: $data['name'],
+            description: $data['description'],
+            folderName: $folderName,
+            version: $data['version'],
+        );
     }
 
     /**
