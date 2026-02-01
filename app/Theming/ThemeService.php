@@ -17,6 +17,11 @@ class ThemeService
     protected array $listeners = [];
 
     /**
+     * @var array<string, ThemeModule>
+     */
+    protected array $modules = [];
+
+    /**
      * Get the currently configured theme.
      * Returns an empty string if not configured.
      */
@@ -77,20 +82,94 @@ class ThemeService
     }
 
     /**
-     * Read any actions from the set theme path if the 'functions.php' file exists.
+     * Read any actions from the 'functions.php' file of the active theme or its modules.
      */
     public function readThemeActions(): void
     {
-        $themeActionsFile = theme_path('functions.php');
-        if (!$themeActionsFile || !file_exists($themeActionsFile)) {
+        $moduleFunctionFiles = array_map(function (ThemeModule $module): string {
+            return $module->path('functions.php');
+        }, $this->modules);
+        $allFunctionFiles = array_merge(array_values($moduleFunctionFiles), [theme_path('functions.php')]);
+        $filteredFunctionFiles = array_filter($allFunctionFiles, function (string $file): bool {
+            return $file && file_exists($file);
+        });
+
+        foreach ($filteredFunctionFiles as $functionFile) {
+            try {
+                require $functionFile;
+            } catch (\Error $exception) {
+                throw new ThemeException("Failed loading theme functions file at \"{$functionFile}\" with error: {$exception->getMessage()}");
+            }
+        }
+    }
+
+    /**
+     * Read the modules folder and load in any valid theme modules.
+     */
+    public function loadModules(): void
+    {
+        $modulesFolder = theme_path('modules');
+        if (!$modulesFolder || !is_dir($modulesFolder)) {
             return;
         }
 
-        try {
-            require $themeActionsFile;
-        } catch (\Error $exception) {
-            throw new ThemeException("Failed loading theme functions file at \"{$themeActionsFile}\" with error: {$exception->getMessage()}");
+        $subFolders = array_filter(scandir($modulesFolder), function ($item) use ($modulesFolder) {
+            return $item !== '.' && $item !== '..' && is_dir($modulesFolder . DIRECTORY_SEPARATOR . $item);
+        });
+
+        foreach ($subFolders as $folderName) {
+            $moduleJsonFile = $modulesFolder . DIRECTORY_SEPARATOR . $folderName . DIRECTORY_SEPARATOR . 'bookstack-module.json';
+
+            if (!file_exists($moduleJsonFile)) {
+                continue;
+            }
+
+            try {
+                $jsonContent = file_get_contents($moduleJsonFile);
+                $jsonData = json_decode($jsonContent, true);
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new ThemeException("Invalid JSON in module file at \"{$moduleJsonFile}\": " . json_last_error_msg());
+                }
+
+                $module = ThemeModule::fromJson($jsonData, $folderName);
+                $this->modules[$folderName] = $module;
+            } catch (ThemeException $exception) {
+                throw $exception;
+            } catch (\Exception $exception) {
+                throw new ThemeException("Failed loading module from \"{$moduleJsonFile}\" with error: {$exception->getMessage()}");
+            }
         }
+    }
+
+    /**
+     * Get all loaded theme modules.
+     * @return array<string, ThemeModule>
+     */
+    public function getModules(): array
+    {
+        return $this->modules;
+    }
+
+    /**
+     * Look for a specific file within the theme or its modules.
+     * Returns the first file found or null if not found.
+     */
+    public function findFirstFile(string $path): ?string
+    {
+        $themePath = theme_path($path);
+        if (file_exists($themePath)) {
+            return $themePath;
+        }
+
+        foreach ($this->modules as $module) {
+            $customizedFile = $module->path($path);
+            if (file_exists($customizedFile)) {
+                return $customizedFile;
+            }
+        }
+
+        return null;
     }
 
     /**

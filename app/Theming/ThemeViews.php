@@ -20,9 +20,17 @@ class ThemeViews
     /**
      * Register any extra paths for where we may expect views to be located
      * with the provided FileViewFinder, to make custom views available for use.
+     * @param ThemeModule[] $modules
      */
-    public function registerViewPathsForTheme(FileViewFinder $finder): void
+    public function registerViewPathsForTheme(FileViewFinder $finder, array $modules): void
     {
+        foreach ($modules as $module) {
+            $moduleViewsPath = $module->path('views');
+            if (file_exists($moduleViewsPath) && is_dir($moduleViewsPath)) {
+                $finder->prependLocation($moduleViewsPath);
+            }
+        }
+
         $finder->prependLocation(theme_path());
     }
 
