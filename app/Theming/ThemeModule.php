@@ -9,7 +9,7 @@ class ThemeModule
     protected string $name;
     protected string $description;
     protected string $folderName;
-    protected int $version;
+    protected string $version;
 
     /**
      * Create a ThemeModule instance from JSON data.
@@ -26,8 +26,12 @@ class ThemeModule
             throw new ThemeException("Module in folder \"{$folderName}\" is missing a valid 'description' property");
         }
 
-        if (!isset($data['version']) || !is_int($data['version']) || $data['version'] < 1) {
+        if (!isset($data['version']) || !is_string($data['version'])) {
             throw new ThemeException("Module in folder \"{$folderName}\" is missing a valid 'version' property");
+        }
+
+        if (!preg_match('/^v?\d+\.\d+\.\d+(-.*)?$/', $data['version'])) {
+            throw new ThemeException("Module in folder \"{$folderName}\" has an invalid 'version' format. Expected semantic version format like '1.0.0' or 'v1.0.0'");
         }
 
         $module = new static();
