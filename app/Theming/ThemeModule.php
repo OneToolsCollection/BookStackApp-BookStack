@@ -4,13 +4,13 @@ namespace BookStack\Theming;
 
 use BookStack\Exceptions\ThemeException;
 
-class ThemeModule
+readonly class ThemeModule
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $description,
-        public readonly string $folderName,
-        public readonly string $version,
+        public string $name,
+        public string $description,
+        public string $folderName,
+        public string $version,
     ) {
     }
 
