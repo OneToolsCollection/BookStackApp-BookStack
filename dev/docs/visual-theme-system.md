@@ -53,7 +53,7 @@ configured application theme.
 
 There are some considerations to these publicly served files:
 
-- Only a predetermined range "web safe" content-types are currently served.
+- Only a predetermined range of "web safe" content-types are currently served.
   - This limits running into potential insecure scenarios in serving problematic file types.
 - A static 1-day cache time it set on files served from this folder.
   - You can use alternative cache-breaking techniques (change of query string) upon changes if needed. 

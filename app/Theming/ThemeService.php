@@ -105,41 +105,16 @@ class ThemeService
 
     /**
      * Read the modules folder and load in any valid theme modules.
+     * @throws ThemeModuleException
      */
     public function loadModules(): void
     {
         $modulesFolder = theme_path('modules');
-        if (!$modulesFolder || !is_dir($modulesFolder)) {
+        if (!$modulesFolder) {
             return;
         }
 
-        $subFolders = array_filter(scandir($modulesFolder), function ($item) use ($modulesFolder) {
-            return $item !== '.' && $item !== '..' && is_dir($modulesFolder . DIRECTORY_SEPARATOR . $item);
-        });
-
-        foreach ($subFolders as $folderName) {
-            $moduleJsonFile = $modulesFolder . DIRECTORY_SEPARATOR . $folderName . DIRECTORY_SEPARATOR . 'bookstack-module.json';
-
-            if (!file_exists($moduleJsonFile)) {
-                continue;
-            }
-
-            try {
-                $jsonContent = file_get_contents($moduleJsonFile);
-                $jsonData = json_decode($jsonContent, true);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new ThemeException("Invalid JSON in module file at \"{$moduleJsonFile}\": " . json_last_error_msg());
-                }
-
-                $module = ThemeModule::fromJson($jsonData, $folderName);
-                $this->modules[$folderName] = $module;
-            } catch (ThemeException $exception) {
-                throw $exception;
-            } catch (\Exception $exception) {
-                throw new ThemeException("Failed loading module from \"{$moduleJsonFile}\" with error: {$exception->getMessage()}");
-            }
-        }
+        $this->modules = (new ThemeModuleManager($modulesFolder))->load();
     }
 
     /**
