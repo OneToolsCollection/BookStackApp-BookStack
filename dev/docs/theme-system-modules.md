@@ -58,3 +58,11 @@ Here are some general best practices when it comes to creating modules:
 - Use a unique name and clear description so the user can understand the purpose of the module.
 - Increment the metadata version on change, keeping to [semver](https://semver.org/) to indicate compatibility of new versions.
 - Where possible, prefer to [insert views before/after](logical-theme-system.md#custom-view-registration-example) instead of overriding existing views, to reduce likelihood of conflicts or update troubles.
+
+### Distribution Format
+
+Modules are expected to be distributed as a compressed ZIP file, where the ZIP contents follow that of a module folder.
+BookStack provides a `php artisan bookstack:install-module` command which allows modules to be installed from these ZIP files, either from a local path or from a web URL.
+Currently, there's a hardcoded total filesize limit of 50MB for module contents installed via this method.
+
+There is not yet any direct update mechanism for modules, although this is something we may introduce in the future.
