@@ -7,6 +7,7 @@ use BookStack\Theming\ThemeModule;
 use BookStack\Theming\ThemeModuleException;
 use BookStack\Theming\ThemeModuleManager;
 use BookStack\Theming\ThemeModuleZip;
+use GuzzleHttp\Psr7\Request;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -61,6 +62,11 @@ class InstallModuleCommand extends Command
         // Get the modules folder of the theme, attempting to create it if not existing,
         // and create a new module manager instance.
         $moduleFolder = $this->getModuleFolder($themeFolder);
+        if (!$moduleFolder) {
+            $this->cleanup();
+            return 1;
+        }
+
         $manager = new ThemeModuleManager($moduleFolder);
 
         // Handle existing modules with the same name
@@ -80,8 +86,8 @@ class InstallModuleCommand extends Command
             return 1;
         }
 
-        $this->info("Module {$newModule->name} ({$newModule->version}) successfully installed!");
-        $this->info("It has been installed at {$moduleFolder}/{$newModule->folderName}.");
+        $this->info("Module \"{$newModule->name}\" ({$newModule->version}) successfully installed!");
+        $this->info("Install location: {$moduleFolder}/{$newModule->folderName}");
         $this->cleanup();
         return 0;
     }
@@ -94,20 +100,20 @@ class InstallModuleCommand extends Command
 
         $this->warn("The following modules already exist with the same name:");
         foreach ($existingModules as $folder => $module) {
-            $this->line("{$module->name} ({$folder}:{$module->version}) - {$module->description}}");
+            $this->line("{$module->name} ({$folder}:{$module->version}) - {$module->description}");
         }
         $this->line('');
 
-        $choices = ['Cancel Module Install', 'Add Alongside Existing'];
+        $choices = ['Cancel module install', 'Add alongside existing module'];
         if (count($existingModules) === 1) {
-            $choices[] = 'Replace Existing Module';
+            $choices[] = 'Replace existing module';
         }
         $choice = $this->choice("What would you like to do?", $choices, 0, null, false);
-        if ($choice === 'Cancel Module Install') {
+        if ($choice === 'Cancel module install') {
             return false;
         }
 
-        if ($choice === 'Replace Existing Module') {
+        if ($choice === 'Replace existing module') {
             $existingModuleFolder = array_key_first($existingModules);
             $this->info("Replacing existing module in {$existingModuleFolder} folder");
             $manager->deleteModuleFolder($existingModuleFolder);
@@ -119,14 +125,17 @@ class InstallModuleCommand extends Command
     protected function getModuleFolder(string $themeFolder): string|null
     {
         $path = $themeFolder . DIRECTORY_SEPARATOR . 'modules';
-        if (!file_exists($path)) {
-            if (!is_dir($path)) {
-                $this->error("ERROR: Cannot create a modules folder, file already exists at {$path}");
-            }
 
+        if (file_exists($path) && !is_dir($path)) {
+            $this->error("ERROR: Cannot create a modules folder, file already exists at {$path}");
+            return null;
+        }
+
+        if (!file_exists($path)) {
             $created = mkdir($path, 0755, true);
             if (!$created) {
                 $this->error("ERROR: Failed to create a modules folder at {$path}");
+                return null;
             }
         }
 
@@ -150,7 +159,7 @@ class InstallModuleCommand extends Command
             $path = base_path("themes/{$folder}");
             $created = mkdir($path, 0755, true);
             if (!$created) {
-                $this->error('Failed to create a theme folder to use. This may be a permissions issue. Try manually configuring an active theme.');
+                $this->error('Failed to create a theme folder to use. This may be a permissions issue. Try manually configuring an active theme');
                 return null;
             }
 
@@ -169,7 +178,7 @@ class InstallModuleCommand extends Command
         }
 
         if ($zip->getContentsSize() > (50 * 1024 * 1024)) {
-            $this->error("ERROR: Module ZIP file is too large. Maximum size is 50MB.");
+            $this->error("ERROR: Module ZIP file is too large. Maximum size is 50MB");
             return null;
         }
 
@@ -183,17 +192,57 @@ class InstallModuleCommand extends Command
         return $themeModule;
     }
 
-    protected function downloadModuleFile(string $location): string
+    protected function downloadModuleFile(string $location): string|null
     {
         $httpRequests = app()->make(HttpRequestService::class);
-        $client = $httpRequests->buildClient(30);
+        $client = $httpRequests->buildClient(30, ['stream' => true]);
+        $originalHost = parse_url($location, PHP_URL_HOST);
+        $currentLocation = $location;
+        $maxRedirects = 3;
+        $redirectCount = 0;
 
-        $resp = $client->get($location, ['stream' => true]);
+        // Follow redirects up to 3 times for the same hostname
+        do {
+            $resp = $client->sendRequest(new Request('GET', $currentLocation));
+            $statusCode = $resp->getStatusCode();
+
+            if ($statusCode >= 300 && $statusCode < 400 && $redirectCount < $maxRedirects) {
+                $redirectLocation = $resp->getHeaderLine('Location');
+                if ($redirectLocation) {
+                    $redirectHost = parse_url($redirectLocation, PHP_URL_HOST);
+                    if ($redirectHost === $originalHost) {
+                        $currentLocation = $redirectLocation;
+                        $redirectCount++;
+                        continue;
+                    }
+                }
+            }
+
+            break;
+        } while (true);
+
+        if ($resp->getStatusCode() >= 300) {
+            $this->error("ERROR: Failed to download module from {$location}");
+            $this->error("Download failed with status code {$resp->getStatusCode()}");
+            return null;
+        }
 
         $tempFile = tempnam(sys_get_temp_dir(), 'bookstack_module_');
         $fileHandle = fopen($tempFile, 'w');
+        $respBody = $resp->getBody();
+        $size = 0;
+        $maxSize = 50 * 1024 * 1024;
 
-        stream_copy_to_stream($resp->getBody()->detach(), $fileHandle);
+        while (!$respBody->eof()) {
+            fwrite($fileHandle, $respBody->read(1024));
+            $size += 1024;
+            if ($size > $maxSize) {
+                fclose($fileHandle);
+                unlink($tempFile);
+                $this->error("ERROR: Module ZIP file is too large. Maximum size is 50MB");
+                return '';
+            }
+        }
 
         fclose($fileHandle);
 
@@ -212,7 +261,7 @@ class InstallModuleCommand extends Command
         if ($isRemote) {
             // Warning about fetching from source
             $host = parse_url($location, PHP_URL_HOST);
-            $this->warn("This will download a module from {$host}. Modules can contain code which would have the ability to do anything on the BookStack host server.");
+            $this->warn("This will download a module from {$host}. Modules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.");
             $trustHost = $this->confirm('Are you sure you trust this source?');
             if (!$trustHost) {
                 return null;
@@ -220,8 +269,8 @@ class InstallModuleCommand extends Command
 
             // Check if the connection is http. If so, warn the user.
             if (str_starts_with($lowerLocation, 'http://')) {
-                $this->warn('You are downloading a module from an insecure HTTP source. We recommend using HTTPS sources.');
-                if (!$this->confirm('Do you wish to continue?')) {
+                $this->warn("You are downloading a module from an insecure HTTP source.\nWe recommend only using HTTPS sources to avoid various security risks.");
+                if (!$this->confirm('Are you sure you want to continue without HTTPS?')) {
                     return null;
                 }
             }

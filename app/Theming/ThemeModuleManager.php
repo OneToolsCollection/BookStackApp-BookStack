@@ -19,7 +19,7 @@ class ThemeModuleManager
      */
     public function getByName(string $name): array
     {
-        return array_filter($this->load(), fn(ThemeModule $module) => $module->getName() === $name);
+        return array_filter($this->load(), fn(ThemeModule $module) => $module->name === $name);
     }
 
     public function deleteModuleFolder(string $moduleFolderName): void
@@ -55,7 +55,7 @@ class ThemeModuleManager
 
         $module = $this->loadFromFolder($folderName);
         if (!$module) {
-            throw new ThemeModuleException("Failed to load module from zip file after extraction.");
+            throw new ThemeModuleException("Failed to load module from zip file after extraction");
         }
 
         return $module;
