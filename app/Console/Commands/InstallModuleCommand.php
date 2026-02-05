@@ -86,12 +86,15 @@ class InstallModuleCommand extends Command
             return 1;
         }
 
-        $this->info("Module \"{$newModule->name}\" ({$newModule->version}) successfully installed!");
+        $this->info("Module \"{$newModule->name}\" ({$newModule->getVersion()}) successfully installed!");
         $this->info("Install location: {$moduleFolder}/{$newModule->folderName}");
         $this->cleanup();
         return 0;
     }
 
+    /**
+     * @param ThemeModule[] $existingModules
+     */
     protected function handleExistingModulesWithSameName(array $existingModules, ThemeModuleManager $manager): bool
     {
         if (count($existingModules) === 0) {
@@ -100,7 +103,7 @@ class InstallModuleCommand extends Command
 
         $this->warn("The following modules already exist with the same name:");
         foreach ($existingModules as $folder => $module) {
-            $this->line("{$module->name} ({$folder}:{$module->version}) - {$module->description}");
+            $this->line("{$module->name} ({$folder}:{$module->getVersion()}) - {$module->description}");
         }
         $this->line('');
 
@@ -145,7 +148,7 @@ class InstallModuleCommand extends Command
     protected function getThemeFolder(): string|null
     {
         $path = theme_path('');
-        if (!$path) {
+        if (!$path || !is_dir($path)) {
             $shouldCreate = $this->confirm('No active theme folder found, would you like to create one?');
             if (!$shouldCreate) {
                 return null;
@@ -178,7 +181,7 @@ class InstallModuleCommand extends Command
         }
 
         if ($zip->getContentsSize() > (50 * 1024 * 1024)) {
-            $this->error("ERROR: Module ZIP file is too large. Maximum size is 50MB");
+            $this->error("ERROR: Module ZIP file contents are too large. Maximum size is 50MB");
             return null;
         }
 
@@ -196,7 +199,7 @@ class InstallModuleCommand extends Command
     {
         $httpRequests = app()->make(HttpRequestService::class);
         $client = $httpRequests->buildClient(30, ['stream' => true]);
-        $originalHost = parse_url($location, PHP_URL_HOST);
+        $originalUrl = parse_url($location);
         $currentLocation = $location;
         $maxRedirects = 3;
         $redirectCount = 0;
@@ -209,8 +212,12 @@ class InstallModuleCommand extends Command
             if ($statusCode >= 300 && $statusCode < 400 && $redirectCount < $maxRedirects) {
                 $redirectLocation = $resp->getHeaderLine('Location');
                 if ($redirectLocation) {
-                    $redirectHost = parse_url($redirectLocation, PHP_URL_HOST);
-                    if ($redirectHost === $originalHost) {
+                    $redirectUrl = parse_url($redirectLocation);
+                    if (
+                        ($originalUrl['host'] ?? '') === ($redirectUrl['host'] ?? '')
+                        && ($originalUrl['scheme'] ?? '') === ($redirectUrl['scheme'] ?? '')
+                        && ($originalUrl['port'] ?? '') === ($redirectUrl['port'] ?? '')
+                    ) {
                         $currentLocation = $redirectLocation;
                         $redirectCount++;
                         continue;
