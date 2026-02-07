@@ -17,21 +17,26 @@ class ThemeViews
      */
     protected array $afterViews = [];
 
+    public function __construct(
+        protected FileViewFinder $finder
+    ) {
+    }
+
     /**
      * Register any extra paths for where we may expect views to be located
-     * with the provided FileViewFinder, to make custom views available for use.
+     * with the FileViewFinder, to make custom views available for use.
      * @param ThemeModule[] $modules
      */
-    public function registerViewPathsForTheme(FileViewFinder $finder, array $modules): void
+    public function registerViewPathsForTheme(array $modules): void
     {
         foreach ($modules as $module) {
             $moduleViewsPath = $module->path('views');
             if (file_exists($moduleViewsPath) && is_dir($moduleViewsPath)) {
-                $finder->prependLocation($moduleViewsPath);
+                $this->finder->prependLocation($moduleViewsPath);
             }
         }
 
-        $finder->prependLocation(theme_path());
+        $this->finder->prependLocation(theme_path());
     }
 
     /**
@@ -70,19 +75,21 @@ class ThemeViews
 
     public function hasRegisteredViews(): bool
     {
-        return !empty($this->beforeViews) && !empty($this->afterViews);
+        return !empty($this->beforeViews) || !empty($this->afterViews);
     }
 
     protected function registerAdjacentView(array &$location, string $targetView, string $localView, int $priority = 50): void
     {
-        $viewPath = theme_path($localView . '.blade.php');
-        if (!file_exists($viewPath)) {
-            throw new ThemeException("Expected registered view file at \"{$viewPath}\" does not exist");
+        try {
+            $viewPath = $this->finder->find($localView);
+        } catch (\InvalidArgumentException $exception) {
+            throw new ThemeException("Expected registered view file with name \"{$localView}\" could not be found.");
         }
 
         if (!isset($location[$targetView])) {
             $location[$targetView] = [];
         }
+
         $location[$targetView][$viewPath] = $priority;
     }
 

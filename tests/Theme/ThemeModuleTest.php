@@ -5,7 +5,7 @@ namespace Tests\Theme;
 use BookStack\Facades\Theme;
 use Tests\TestCase;
 
-class ThemeModuleTests extends TestCase
+class ThemeModuleTest extends TestCase
 {
     public function test_modules_loaded_on_theme_load()
     {
@@ -204,6 +204,19 @@ class ThemeModuleTests extends TestCase
 
             $this->assertEquals('cat', $this->app->getAlias('dog'));
             $this->assertEquals('beans', $this->app->getAlias('cheese'));
+        });
+    }
+
+    public function test_module_can_use_theme_view_render_functions()
+    {
+        $this->usingModuleFolder(function (string $moduleFolderPath) {
+            file_put_contents($moduleFolderPath . '/functions.php', "<?php\n\BookStack\Facades\Theme::listen(\BookStack\Theming\ThemeEvents::THEME_REGISTER_VIEWS, fn(\$views) => \$views->renderBefore('layouts.parts.header', 'cat', 100));");
+            mkdir($moduleFolderPath . '/views', 0777, true);
+            file_put_contents($moduleFolderPath . '/views/cat.blade.php', 'mysupercatispouncy');
+
+            $this->refreshApplication();
+
+            $this->asAdmin()->get('/')->assertSee('mysupercatispouncy');
         });
     }
 

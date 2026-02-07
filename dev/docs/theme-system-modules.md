@@ -58,6 +58,9 @@ Here are some general best practices when it comes to creating modules:
 - Use a unique name and clear description so the user can understand the purpose of the module.
 - Increment the metadata version on change, keeping to [semver](https://semver.org/) to indicate compatibility of new versions.
 - Where possible, prefer to [insert views before/after](logical-theme-system.md#custom-view-registration-example) instead of overriding existing views, to reduce likelihood of conflicts or update troubles.
+- When using/registering custom views, use some level of unique namespacing within the view path to prevent potential conflicts with other customizations.
+  - For example, I may store a view within my module as `views/my-module-name-welcome.blade.php`, to be registered as 'my-module-name-welcome'.
+  - This is important since views may be resolved from other modules or the active theme, which may/will override your module level view.
 
 ### Distribution Format
 

@@ -35,9 +35,9 @@ class ThemeServiceProvider extends ServiceProvider
         $themeService->readThemeActions();
         $themeService->dispatch(ThemeEvents::APP_BOOT, $this->app);
 
-        $themeViews = new ThemeViews();
+        $themeViews = new ThemeViews($viewFactory->getFinder());
+        $themeViews->registerViewPathsForTheme($themeService->getModules());
         $themeService->dispatch(ThemeEvents::THEME_REGISTER_VIEWS, $themeViews);
-        $themeViews->registerViewPathsForTheme($viewFactory->getFinder(), $themeService->getModules());
         if ($themeViews->hasRegisteredViews()) {
             $viewFactory->share('__themeViews', $themeViews);
             Blade::directive('include', function ($expression) {
