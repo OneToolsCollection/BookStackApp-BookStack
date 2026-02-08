@@ -42,16 +42,20 @@ class ThemeViews
     /**
      * Provide the response for a blade template view include.
      */
-    public function handleViewInclude(string $viewPath, array $data = []): string
+    public function handleViewInclude(string $viewPath, array $data = [], array $mergeData = []): string
     {
         if (!$this->hasRegisteredViews()) {
-            return view()->make($viewPath, $data)->render();
+            return view()->make($viewPath, $data, $mergeData)->render();
+        }
+
+        if (str_contains('book-tree', $viewPath)) {
+            dd($viewPath, $data);
         }
 
         $viewsContent = [
-            ...$this->renderViewSets($this->beforeViews[$viewPath] ?? [], $data),
-            view()->make($viewPath, $data)->render(),
-            ...$this->renderViewSets($this->afterViews[$viewPath] ?? [], $data),
+            ...$this->renderViewSets($this->beforeViews[$viewPath] ?? [], $data, $mergeData),
+            view()->make($viewPath, $data, $mergeData)->render(),
+            ...$this->renderViewSets($this->afterViews[$viewPath] ?? [], $data, $mergeData),
         ];
 
         return implode("\n", $viewsContent);
@@ -97,15 +101,15 @@ class ThemeViews
      * @param array<string, int> $viewSet
      * @return string[]
      */
-    protected function renderViewSets(array $viewSet, array $data): array
+    protected function renderViewSets(array $viewSet, array $data, array $mergeData): array
     {
         $paths = array_keys($viewSet);
         usort($paths, function (string $a, string $b) use ($viewSet) {
             return $viewSet[$a] <=> $viewSet[$b];
         });
 
-        return array_map(function (string $viewPath) use ($data) {
-            return view()->file($viewPath, $data)->render();
+        return array_map(function (string $viewPath) use ($data, $mergeData) {
+            return view()->file($viewPath, $data, $mergeData)->render();
         }, $paths);
     }
 }

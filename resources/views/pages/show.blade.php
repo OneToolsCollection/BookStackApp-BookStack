@@ -22,7 +22,7 @@
              class="page-content clearfix">
             @include('pages.parts.page-display')
         </div>
-        @include('pages.parts.pointer', ['page' => $page])
+        @include('pages.parts.pointer', ['page' => $page, 'commentTree' => $commentTree])
     </main>
 
     @include('entities.sibling-navigation', ['next' => $next, 'previous' => $previous])
