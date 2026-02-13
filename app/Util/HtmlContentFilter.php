@@ -5,15 +5,53 @@ namespace BookStack\Util;
 use DOMAttr;
 use DOMElement;
 use DOMNodeList;
+use HTMLPurifier;
+use HTMLPurifier_HTML5Config;
 
 class HtmlContentFilter
 {
-    /**
-     * Remove all active content from the given HTML document.
-     * This aims to cover anything which can dynamically deal with, or send, data
-     * like any JavaScript actions or form content.
-     */
-    public static function removeActiveContentFromDocument(HtmlDocument $doc): void
+    public function __construct(
+        protected HtmlContentFilterConfig $config
+    ) {
+    }
+
+    public function filterDocument(HtmlDocument $doc): string
+    {
+        if ($this->config->filterOutJavaScript) {
+            $this->filterOutScriptsFromDocument($doc);
+        }
+        if ($this->config->filterOutFormElements) {
+            $this->filterOutFormElementsFromDocument($doc);
+        }
+        if ($this->config->filterOutBadHtmlElements) {
+            $this->filterOutBadHtmlElementsFromDocument($doc);
+        }
+        if ($this->config->filterOutNonContentElements) {
+            $this->filterOutNonContentElementsFromDocument($doc);
+        }
+
+        $filtered = $doc->getBodyInnerHtml();
+        if ($this->config->useAllowListFilter) {
+            $filtered = $this->applyAllowListFiltering($filtered);
+        }
+
+        return $filtered;
+    }
+
+    public function filterString(string $html): string
+    {
+        return $this->filterDocument(new HtmlDocument($html));
+    }
+
+    protected function applyAllowListFiltering(string $html): string
+    {
+        $config = HTMLPurifier_HTML5Config::createDefault();
+        $config->set('Cache.SerializerPath', storage_path('purifier'));
+        $purifier = new HTMLPurifier($config);
+        return $purifier->purify($html);
+    }
+
+    protected function filterOutScriptsFromDocument(HtmlDocument $doc): void
     {
         // Remove standard script tags
         $scriptElems = $doc->queryXPath('//script');
@@ -26,10 +64,6 @@ class HtmlContentFilter
         // Remove elements with form-like attributes with calls to JavaScript URI
         $badForms = $doc->queryXPath('//*[' . static::xpathContains('@action', 'javascript:') . '] | //*[' . static::xpathContains('@formaction', 'javascript:') . ']');
         static::removeNodes($badForms);
-
-        // Remove meta tag to prevent external redirects
-        $metaTags = $doc->queryXPath('//meta[' . static::xpathContains('@content', 'url') . ']');
-        static::removeNodes($metaTags);
 
         // Remove data or JavaScript iFrames
         $badIframes = $doc->queryXPath('//*[' . static::xpathContains('@src', 'data:') . '] | //*[' . static::xpathContains('@src', 'javascript:') . '] | //*[@srcdoc]');
@@ -49,7 +83,10 @@ class HtmlContentFilter
         // Remove 'on*' attributes
         $onAttributes = $doc->queryXPath('//@*[starts-with(name(), \'on\')]');
         static::removeAttributes($onAttributes);
+    }
 
+    protected function filterOutFormElementsFromDocument(HtmlDocument $doc): void
+    {
         // Remove form elements
         $formElements = ['form', 'fieldset', 'button', 'textarea', 'select'];
         foreach ($formElements as $formElement) {
@@ -75,41 +112,21 @@ class HtmlContentFilter
         }
     }
 
-    /**
-     * Remove active content from the given HTML string.
-     * This aims to cover anything which can dynamically deal with, or send, data
-     * like any JavaScript actions or form content.
-     */
-    public static function removeActiveContentFromHtmlString(string $html): string
+    protected function filterOutBadHtmlElementsFromDocument(HtmlDocument $doc): void
     {
-        if (empty($html)) {
-            return $html;
+        // Remove meta tag to prevent external redirects
+        $metaTags = $doc->queryXPath('//meta[' . static::xpathContains('@content', 'url') . ']');
+        static::removeNodes($metaTags);
+    }
+
+    protected function filterOutNonContentElementsFromDocument(HtmlDocument $doc): void
+    {
+        // Remove non-content elements
+        $formElements = ['link', 'style', 'meta', 'title', 'template'];
+        foreach ($formElements as $formElement) {
+            $matchingFormElements = $doc->queryXPath('//' . $formElement);
+            static::removeNodes($matchingFormElements);
         }
-
-        $doc = new HtmlDocument($html);
-        static::removeActiveContentFromDocument($doc);
-
-        return $doc->getBodyInnerHtml();
-    }
-
-    /**
-     * Alias using the old method name to avoid potential compatibility breaks during patch release.
-     * To remove in future feature release.
-     * @deprecated Use removeActiveContentFromDocument instead.
-     */
-    public static function removeScriptsFromDocument(HtmlDocument $doc): void
-    {
-        static::removeActiveContentFromDocument($doc);
-    }
-
-    /**
-     * Alias using the old method name to avoid potential compatibility breaks during patch release.
-     * To remove in future feature release.
-     * @deprecated Use removeActiveContentFromHtmlString instead.
-     */
-    public static function removeScriptsFromHtmlString(string $html): string
-    {
-        return static::removeActiveContentFromHtmlString($html);
     }
 
     /**
@@ -146,5 +163,35 @@ class HtmlContentFilter
             $parentNode = $attr->parentNode;
             $parentNode->removeAttribute($attrName);
         }
+    }
+
+    /**
+     * Alias using the old method name to avoid potential compatibility breaks during patch release.
+     * To remove in future feature release.
+     * @deprecated Use filterDocument instead.
+     */
+    public static function removeScriptsFromDocument(HtmlDocument $doc): void
+    {
+        $config = new HtmlContentFilterConfig(
+            filterOutNonContentElements: false,
+            useAllowListFilter: false,
+        );
+        $filter = new static($config);
+        $filter->filterDocument($doc);
+    }
+
+    /**
+     * Alias using the old method name to avoid potential compatibility breaks during patch release.
+     * To remove in future feature release.
+     * @deprecated Use filterString instead.
+     */
+    public static function removeScriptsFromHtmlString(string $html): string
+    {
+        $config = new HtmlContentFilterConfig(
+            filterOutNonContentElements: false,
+            useAllowListFilter: false,
+        );
+        $filter = new static($config);
+        return $filter->filterString($html);
     }
 }

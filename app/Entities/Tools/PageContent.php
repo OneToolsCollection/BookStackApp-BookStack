@@ -13,6 +13,7 @@ use BookStack\Uploads\ImageRepo;
 use BookStack\Uploads\ImageService;
 use BookStack\Users\Models\User;
 use BookStack\Util\HtmlContentFilter;
+use BookStack\Util\HtmlContentFilterConfig;
 use BookStack\Util\HtmlDocument;
 use BookStack\Util\WebSafeMimeSniffer;
 use Closure;
@@ -317,11 +318,28 @@ class PageContent
             $this->updateIdsRecursively($doc->getBody(), 0, $idMap, $changeMap);
         }
 
-        if (!config('app.allow_content_scripts')) {
-            HtmlContentFilter::removeActiveContentFromDocument($doc);
+        $cacheKey = $this->getContentCacheKey($doc->getBodyInnerHtml());
+        $cached = cache()->get($cacheKey, null);
+        if ($cached !== null) {
+            return $cached;
         }
 
-        return $doc->getBodyInnerHtml();
+        $filterConfig = HtmlContentFilterConfig::fromConfigString(config('app.content_filtering'));
+        $filter = new HtmlContentFilter($filterConfig);
+        $filtered = $filter->filterDocument($doc);
+
+        $cacheTime = 86400 * 7; // 1 week
+        cache()->put($cacheKey, $filtered, $cacheTime);
+
+        return $filtered;
+    }
+
+    protected function getContentCacheKey(string $html): string
+    {
+        $contentHash = md5($html);
+        $contentId = $this->page->id;
+        $contentTime = $this->page->updated_at->timestamp;
+        return "page-content-cache::{$contentId}::{$contentTime}::{$contentHash}";
     }
 
     /**

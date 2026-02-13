@@ -42,6 +42,18 @@ return [
     // Even when overridden the WYSIWYG editor may still escape script content.
     'allow_content_scripts' => env('ALLOW_CONTENT_SCRIPTS', false),
 
+    // Control the behaviour of page content filtering.
+    // This setting is a collection of characters which represent different available filters:
+    // - j - Filter out JavaScript based content
+    // - h - Filter out unexpected, potentially dangerous, HTML elements
+    // - f - Filter out unexpected form elements
+    // - a - Run content through a more complex allow-list filter
+    // This defaults to using all filters, unless ALLOW_CONTENT_SCRIPTS is set to true in which case no filters are used.
+    // Note: These filters are a best attempt, and may not be 100% effective. They are typically a layer used in addition to other security measures.
+    // TODO - Add to example env
+    // TODO - Remove allow_content_scripts option above
+    'content_filtering' => env('CONTENT_FILTERING', env('ALLOW_CONTENT_SCRIPTS', false) === true ? '' : 'jfha'),
+
     // Allow server-side fetches to be performed to potentially unknown
     // and user-provided locations. Primarily used in exports when loading
     // in externally referenced assets.
