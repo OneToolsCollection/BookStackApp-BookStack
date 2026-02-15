@@ -339,7 +339,7 @@ class PageContent
     {
         $contentHash = md5($html);
         $contentId = $this->page->id;
-        $contentTime = $this->page->updated_at->timestamp;
+        $contentTime = $this->page->updated_at?->timestamp ?? time();
         $appVersion = AppVersion::get();
         return "page-content-cache::{$appVersion}::{$contentId}::{$contentTime}::{$contentHash}";
     }

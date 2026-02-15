@@ -41,7 +41,7 @@ class CustomHtmlHeadContentProvider
         $hash = md5($content);
 
         return $this->cache->remember('custom-head-export:' . $hash, 86400, function () use ($content) {
-            $config = new HtmlContentFilterConfig(filterOutNonContentElements: false);
+            $config = new HtmlContentFilterConfig(filterOutNonContentElements: false, useAllowListFilter: false);
             return (new HtmlContentFilter($config))->filterString($content);
         });
     }

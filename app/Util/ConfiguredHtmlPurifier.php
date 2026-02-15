@@ -62,7 +62,7 @@ class ConfiguredHtmlPurifier
         $config->set('Attr.EnableID', true);
         $config->set('Attr.ID.HTML5', true);
         $config->set('Output.FixInnerHTML', false);
-        $config->set('URI.SafeIframeRegexp', '%^(http://|https://)%');
+        $config->set('URI.SafeIframeRegexp', '%^(http://|https://|//)%');
         $config->set('URI.AllowedSchemes', [
             'http' => true,
             'https' => true,
