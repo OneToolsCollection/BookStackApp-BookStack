@@ -2,6 +2,7 @@
 
 namespace BookStack\Entities\Tools;
 
+use BookStack\App\AppVersion;
 use BookStack\Entities\Models\Page;
 use BookStack\Entities\Queries\PageQueries;
 use BookStack\Entities\Tools\Markdown\MarkdownToHtml;
@@ -321,13 +322,12 @@ class PageContent
         $cacheKey = $this->getContentCacheKey($doc->getBodyInnerHtml());
         $cached = cache()->get($cacheKey, null);
         if ($cached !== null) {
-//            return $cached;
+            return $cached;
         }
 
         $filterConfig = HtmlContentFilterConfig::fromConfigString(config('app.content_filtering'));
         $filter = new HtmlContentFilter($filterConfig);
         $filtered = $filter->filterDocument($doc);
-//        $filtered = $doc->getBodyInnerHtml();
 
         $cacheTime = 86400 * 7; // 1 week
         cache()->put($cacheKey, $filtered, $cacheTime);
@@ -340,7 +340,8 @@ class PageContent
         $contentHash = md5($html);
         $contentId = $this->page->id;
         $contentTime = $this->page->updated_at->timestamp;
-        return "page-content-cache::{$contentId}::{$contentTime}::{$contentHash}";
+        $appVersion = AppVersion::get();
+        return "page-content-cache::{$appVersion}::{$contentId}::{$contentTime}::{$contentHash}";
     }
 
     /**
