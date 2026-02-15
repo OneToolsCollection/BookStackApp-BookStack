@@ -5,8 +5,6 @@ namespace BookStack\Util;
 use DOMAttr;
 use DOMElement;
 use DOMNodeList;
-use HTMLPurifier;
-use HTMLPurifier_HTML5Config;
 
 class HtmlContentFilter
 {
@@ -45,9 +43,7 @@ class HtmlContentFilter
 
     protected function applyAllowListFiltering(string $html): string
     {
-        $config = HTMLPurifier_HTML5Config::createDefault();
-        $config->set('Cache.SerializerPath', storage_path('purifier'));
-        $purifier = new HTMLPurifier($config);
+        $purifier = new ConfiguredHtmlPurifier();
         return $purifier->purify($html);
     }
 

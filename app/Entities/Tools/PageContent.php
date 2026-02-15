@@ -321,12 +321,13 @@ class PageContent
         $cacheKey = $this->getContentCacheKey($doc->getBodyInnerHtml());
         $cached = cache()->get($cacheKey, null);
         if ($cached !== null) {
-            return $cached;
+//            return $cached;
         }
 
         $filterConfig = HtmlContentFilterConfig::fromConfigString(config('app.content_filtering'));
         $filter = new HtmlContentFilter($filterConfig);
         $filtered = $filter->filterDocument($doc);
+//        $filtered = $doc->getBodyInnerHtml();
 
         $cacheTime = 86400 * 7; // 1 week
         cache()->put($cacheKey, $filtered, $cacheTime);
