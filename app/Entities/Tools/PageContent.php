@@ -341,7 +341,8 @@ class PageContent
         $contentId = $this->page->id;
         $contentTime = $this->page->updated_at?->timestamp ?? time();
         $appVersion = AppVersion::get();
-        return "page-content-cache::{$appVersion}::{$contentId}::{$contentTime}::{$contentHash}";
+        $filterConfig = config('app.content_filtering') ?? '';
+        return "page-content-cache::{$filterConfig}::{$appVersion}::{$contentId}::{$contentTime}::{$contentHash}";
     }
 
     /**

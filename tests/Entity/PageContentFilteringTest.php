@@ -22,6 +22,8 @@ class PageContentFilteringTest extends TestCase
 
     public function test_more_complex_content_script_escaping_scenarios()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             "<p>Some script</p><script>alert('cat')</script>",
             "<div><div><div><div><p>Some script</p><script>alert('cat')</script></div></div></div></div>",
@@ -47,6 +49,8 @@ class PageContentFilteringTest extends TestCase
 
     public function test_js_and_base64_src_urls_are_removed()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             '<iframe src="javascript:alert(document.cookie)"></iframe>',
             '<iframe src="JavAScRipT:alert(document.cookie)"></iframe>',
@@ -89,6 +93,8 @@ class PageContentFilteringTest extends TestCase
 
     public function test_javascript_uri_links_are_removed()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             '<a id="xss" href="javascript:alert(document.cookie)>Click me</a>',
             '<a id="xss" href="javascript: alert(document.cookie)>Click me</a>',
@@ -110,8 +116,23 @@ class PageContentFilteringTest extends TestCase
         }
     }
 
+    public function test_form_filtering_is_controlled_by_config()
+    {
+        config()->set('app.content_filtering', '');
+        $page = $this->entities->page();
+        $page->html = '<form><input type="text" id="dont-see-this" value="test"></form>';
+        $page->save();
+
+        $this->asEditor()->get($page->getUrl())->assertSee('dont-see-this', false);
+
+        config()->set('app.content_filtering', 'f');
+        $this->get($page->getUrl())->assertDontSee('dont-see-this', false);
+    }
+
     public function test_form_actions_with_javascript_are_removed()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             '<customform><custominput id="xss" type=submit formaction=javascript:alert(document.domain) value=Submit><custominput></customform>',
             '<customform ><custombutton id="xss" formaction="JaVaScRiPt:alert(document.domain)">Click me</custombutton></customform>',
@@ -139,6 +160,8 @@ class PageContentFilteringTest extends TestCase
 
     public function test_form_elements_are_removed()
     {
+        config()->set('app.content_filtering', 'f');
+
         $checks = [
             '<p>thisisacattofind</p><form>thisdogshouldnotbefound</form>',
             '<p>thisisacattofind</p><input type="text" value="thisdogshouldnotbefound">',
@@ -182,6 +205,8 @@ TESTCASE
 
     public function test_form_attributes_are_removed()
     {
+        config()->set('app.content_filtering', 'f');
+
         $withinSvgSample = <<<'TESTCASE'
 <svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
   <foreignObject width="100%" height="100%">
@@ -229,6 +254,8 @@ TESTCASE;
 
     public function test_metadata_redirects_are_removed()
     {
+        config()->set('app.content_filtering', 'h');
+
         $checks = [
             '<meta http-equiv="refresh" content="0; url=//external_url">',
             '<meta http-equiv="refresh" ConTeNt="0; url=//external_url">',
@@ -253,6 +280,8 @@ TESTCASE;
 
     public function test_page_inline_on_attributes_removed_by_default()
     {
+        config()->set('app.content_filtering', 'j');
+
         $this->asEditor();
         $page = $this->entities->page();
         $script = '<p onmouseenter="console.log(\'test\')">Hello</p>';
@@ -267,6 +296,8 @@ TESTCASE;
 
     public function test_more_complex_inline_on_attributes_escaping_scenarios()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             '<p onclick="console.log(\'test\')">Hello</p>',
             '<p OnCliCk="console.log(\'test\')">Hello</p>',
@@ -308,6 +339,8 @@ TESTCASE;
 
     public function test_svg_script_usage_is_removed()
     {
+        config()->set('app.content_filtering', 'j');
+
         $checks = [
             '<svg id="test" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100"><a xlink:href="javascript:alert(document.domain)"><rect x="0" y="0" width="100" height="100" /></a></svg>',
             '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="data:application/xml;base64 ,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4KPGRlZnM+CjxjaXJjbGUgaWQ9InRlc3QiIHI9IjAiIGN4PSIwIiBjeT0iMCIgc3R5bGU9ImZpbGw6ICNGMDAiPgo8c2V0IGF0dHJpYnV0ZU5hbWU9ImZpbGwiIGF0dHJpYnV0ZVR5cGU9IkNTUyIgb25iZWdpbj0nYWxlcnQoZG9jdW1lbnQuZG9tYWluKScKb25lbmQ9J2FsZXJ0KCJvbmVuZCIpJyB0bz0iIzAwRiIgYmVnaW49IjBzIiBkdXI9Ijk5OXMiIC8+CjwvY2lyY2xlPgo8L2RlZnM+Cjx1c2UgeGxpbms6aHJlZj0iI3Rlc3QiLz4KPC9zdmc+#test"/></svg>',
@@ -349,5 +382,47 @@ TESTCASE;
         $pageView = $this->get($page->getUrl());
         $pageView->assertSee($script, false);
         $pageView->assertDontSee('<p>Hello</p>', false);
+    }
+
+    public function test_non_content_filtering_is_controlled_by_config()
+    {
+        config()->set('app.content_filtering', 'h');
+        $page = $this->entities->page();
+        $html = <<<'HTML'
+<style>superbeans!</style>
+<p>inbetweenpsection</p>
+<link rel="stylesheet" href="https://example.com/superbeans.css">
+<meta name="description" content="superbeans!">
+<title>superbeans!</title>
+<template id="template">superbeans!</template>
+HTML;
+
+        $page->html = $html;
+        $page->save();
+
+        $resp = $this->asEditor()->get($page->getUrl());
+        $resp->assertDontSee('superbeans', false);
+        $resp->assertSee('inbetweenpsection', false);
+    }
+
+    public function test_non_content_filtering()
+    {
+        config()->set('app.content_filtering', 'h');
+    }
+
+    public function test_allow_list_filtering_is_controlled_by_config()
+    {
+        config()->set('app.content_filtering', '');
+        $page = $this->entities->page();
+        $page->html = '<div style="position: absolute; left: 0;color:#00FFEE;">Hello!</div>';
+        $page->save();
+
+        $resp = $this->asEditor()->get($page->getUrl());
+        $resp->assertSee('style="position: absolute; left: 0;color:#00FFEE;"', false);
+
+        config()->set('app.content_filtering', 'a');
+        $resp = $this->get($page->getUrl());
+        $resp->assertDontSee('style="position: absolute; left: 0;color:#00FFEE;"', false);
+        $resp->assertSee('style="color:#00FFEE;"', false);
     }
 }
