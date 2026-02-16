@@ -177,6 +177,13 @@ class ConfigTest extends TestCase
         });
     }
 
+    public function test_content_filtering_can_be_disabled()
+    {
+        $this->runWithEnv(['APP_CONTENT_FILTERING' => "", 'ALLOW_CONTENT_SCRIPTS' => null], function () {
+            $this->assertEquals('', config('app.content_filtering'));
+        });
+    }
+
     public function test_allow_content_scripts_disables_content_filtering()
     {
         $this->runWithEnv(['APP_CONTENT_FILTERING' => null, 'ALLOW_CONTENT_SCRIPTS' => 'true'], function () {

@@ -37,21 +37,14 @@ return [
     // The limit for all uploaded files, including images and attachments in MB.
     'upload_limit' => env('FILE_UPLOAD_SIZE_LIMIT', 50),
 
-    // Allow <script> tags to entered within page content.
-    // <script> tags are escaped by default.
-    // Even when overridden the WYSIWYG editor may still escape script content.
-    'allow_content_scripts' => env('ALLOW_CONTENT_SCRIPTS', false),
-
     // Control the behaviour of content filtering, primarily used for page content.
-    // This setting is a collection of characters which represent different available filters:
+    // This setting is a string of characters which represent different available filters:
     // - j - Filter out JavaScript and unknown binary data based content
     // - h - Filter out unexpected, and potentially dangerous, HTML elements
     // - f - Filter out unexpected form elements
-    // - a - Run content through a more complex allow-list filter
+    // - a - Run content through a more complex allowlist filter
     // This defaults to using all filters, unless ALLOW_CONTENT_SCRIPTS is set to true in which case no filters are used.
-    // Note: These filters are a best attempt, and may not be 100% effective. They are typically a layer used in addition to other security measures.
-    // TODO - Add to example env
-    // TODO - Remove allow_content_scripts option above
+    // Note: These filters are a best-attempt and may not be 100% effective. They are typically a layer used in addition to other security measures.
     'content_filtering' => env('APP_CONTENT_FILTERING', env('ALLOW_CONTENT_SCRIPTS', false) === true ? '' : 'jhfa'),
 
     // Allow server-side fetches to be performed to potentially unknown
