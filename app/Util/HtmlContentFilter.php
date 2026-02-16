@@ -61,13 +61,17 @@ class HtmlContentFilter
         $badForms = $doc->queryXPath('//*[' . static::xpathContains('@action', 'javascript:') . '] | //*[' . static::xpathContains('@formaction', 'javascript:') . ']');
         static::removeNodes($badForms);
 
-        // Remove data or JavaScript iFrames
+        // Remove data or JavaScript iFrames & embeds
         $badIframes = $doc->queryXPath('//*[' . static::xpathContains('@src', 'data:') . '] | //*[' . static::xpathContains('@src', 'javascript:') . '] | //*[@srcdoc]');
         static::removeNodes($badIframes);
 
+        // Remove data or JavaScript objects
+        $badObjects = $doc->queryXPath('//*[' . static::xpathContains('@data', 'data:') . '] | //*[' . static::xpathContains('@data', 'javascript:') . ']');
+        static::removeNodes($badObjects);
+
         // Remove attributes, within svg children, hiding JavaScript or data uris.
         // A bunch of svg element and attribute combinations expose xss possibilities.
-        // For example, SVG animate tag can exploit javascript in values.
+        // For example, SVG animate tag can exploit JavaScript in values.
         $badValuesAttrs = $doc->queryXPath('//svg//@*[' . static::xpathContains('.', 'data:') . '] | //svg//@*[' . static::xpathContains('.', 'javascript:') . ']');
         static::removeAttributes($badValuesAttrs);
 

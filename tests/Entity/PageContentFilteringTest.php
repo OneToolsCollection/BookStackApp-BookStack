@@ -69,6 +69,20 @@ class PageContentFilteringTest extends TestCase
             '<iframe srcdoc="<script>window.alert(document.cookie)</script>"></iframe>',
             '<iframe SRCdoc="<script>window.alert(document.cookie)</script>"></iframe>',
             '<IMG SRC=`javascript:alert("RSnake says, \'XSS\'")`>',
+            '<object data="javascript:alert(document.cookie)"></object>',
+            '<object data="JavAScRipT:alert(document.cookie)"></object>',
+            '<object data="JavAScRipT:alert(document.cookie)"></object>',
+            '<object SRC=" javascript: alert(document.cookie)"></object>',
+            '<object data="data:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg==" frameborder="0"></object>',
+            '<object data="DaTa:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg==" frameborder="0"></object>',
+            '<object data=" data:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg==" frameborder="0"></object>',
+            '<embed src="javascript:alert(document.cookie)"/>',
+            '<embed src="JavAScRipT:alert(document.cookie)"/>',
+            '<embed src="JavAScRipT:alert(document.cookie)"/>',
+            '<embed SRC=" javascript: alert(document.cookie)"/>',
+            '<embed src="data:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg=="/>',
+            '<embed src="DaTa:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg=="/>',
+            '<embed src=" data:text/html;base64,PHNjcmlwdD5hbGVydCgnaGVsbG8nKTwvc2NyaXB0Pg=="/>',
         ];
 
         $this->asEditor();
@@ -81,6 +95,8 @@ class PageContentFilteringTest extends TestCase
             $pageView = $this->get($page->getUrl());
             $pageView->assertStatus(200);
             $html = $this->withHtml($pageView);
+            $html->assertElementNotContains('.page-content', '<object');
+            $html->assertElementNotContains('.page-content', 'data=');
             $html->assertElementNotContains('.page-content', '<iframe>');
             $html->assertElementNotContains('.page-content', '<img');
             $html->assertElementNotContains('.page-content', '</iframe>');
@@ -424,5 +440,26 @@ HTML;
         $resp = $this->get($page->getUrl());
         $resp->assertDontSee('style="position: absolute; left: 0;color:#00FFEE;"', false);
         $resp->assertSee('style="color:#00FFEE;"', false);
+    }
+
+    public function test_allow_list_style_filtering()
+    {
+        $testCasesExpectedByInput = [
+            '<div style="position:absolute;left:0;color:#00FFEE;">Hello!</div>' => '<div style="color:#00FFEE;">Hello!</div>',
+            '<div style="background:#FF0000;left:0;color:#00FFEE;">Hello!</div>' => '<div style="background:#FF0000;color:#00FFEE;">Hello!</div>',
+            '<div style="color:#00FFEE;">Hello!<style>testinghello!</style></div>' => '<div style="color:#00FFEE;">Hello!</div>',
+        ];
+
+        config()->set('app.content_filtering', 'a');
+        $page = $this->entities->page();
+        $this->asEditor();
+
+        foreach ($testCasesExpectedByInput as $input => $expected) {
+            $page->html = $input;
+            $page->save();
+            $resp = $this->get($page->getUrl());
+
+            $resp->assertSee($expected, false);
+        }
     }
 }
