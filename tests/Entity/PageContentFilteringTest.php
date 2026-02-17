@@ -402,6 +402,26 @@ TESTCASE;
 
     public function test_non_content_filtering_is_controlled_by_config()
     {
+        config()->set('app.content_filtering', '');
+        $page = $this->entities->page();
+        $html = <<<'HTML'
+<style>superbeans!</style>
+<template id="template">superbeans!</template>
+HTML;
+        $page->html = $html;
+        $page->save();
+
+        $resp = $this->asEditor()->get($page->getUrl());
+        $resp->assertSee('superbeans', false);
+
+        config()->set('app.content_filtering', 'h');
+
+        $resp = $this->asEditor()->get($page->getUrl());
+        $resp->assertDontSee('superbeans', false);
+    }
+
+    public function test_non_content_filtering()
+    {
         config()->set('app.content_filtering', 'h');
         $page = $this->entities->page();
         $html = <<<'HTML'
@@ -419,11 +439,6 @@ HTML;
         $resp = $this->asEditor()->get($page->getUrl());
         $resp->assertDontSee('superbeans', false);
         $resp->assertSee('inbetweenpsection', false);
-    }
-
-    public function test_non_content_filtering()
-    {
-        config()->set('app.content_filtering', 'h');
     }
 
     public function test_allow_list_filtering_is_controlled_by_config()

@@ -176,7 +176,7 @@ class HtmlContentFilter
             filterOutNonContentElements: false,
             useAllowListFilter: false,
         );
-        $filter = new static($config);
+        $filter = new self($config);
         $filter->filterDocument($doc);
     }
 
@@ -191,7 +191,7 @@ class HtmlContentFilter
             filterOutNonContentElements: false,
             useAllowListFilter: false,
         );
-        $filter = new static($config);
+        $filter = new self($config);
         return $filter->filterString($html);
     }
 }
