@@ -53,8 +53,8 @@ return [
     'allow_untrusted_server_fetching' => env('ALLOW_UNTRUSTED_SERVER_FETCHING', false),
 
     // Override the default behaviour for allowing crawlers to crawl the instance.
-    // May be ignored if view has be overridden or modified.
-    // Defaults to null since, if not set, 'app-public' status used instead.
+    // May be ignored if the underlying view has been overridden or modified.
+    // Defaults to null in which case the 'app-public' status is used instead.
     'allow_robots' => env('ALLOW_ROBOTS', null),
 
     // Application Base URL, Used by laravel in development commands
