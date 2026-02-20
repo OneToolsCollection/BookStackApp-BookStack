@@ -278,4 +278,25 @@ class BookTest extends TestCase
         $resp = $this->asEditor()->get($book->getUrl());
         $resp->assertSee("<p>My great<br>\ndescription<br>\n<br>\nwith newlines</p>", false);
     }
+
+    public function test_description_with_only_br_tags_results_in_empty_p_tag_used_on_show()
+    {
+        $descriptions = [
+            '<p><br></p>',
+            '<p><br><br><br><br></p>',
+            '<p><br><br><br></p><h1><br><br><br><br><br></h1>',
+        ];
+        $book = $this->entities->book();
+        $this->asEditor();
+
+        foreach ($descriptions as $descriptionTestCase) {
+            $book->description_html = $descriptionTestCase;
+            $book->save();
+
+            $resp = $this->get($book->getUrl());
+            $html = $this->withHtml($resp);
+            $descriptionHtml = $html->getInnerHtml('.book-content > div.text-muted:first-child');
+            $this->assertEquals('<p></p>', $descriptionHtml);
+        }
+    }
 }
