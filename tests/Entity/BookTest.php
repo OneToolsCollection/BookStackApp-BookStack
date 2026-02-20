@@ -154,6 +154,20 @@ class BookTest extends TestCase
         $this->assertNotificationContains($redirectReq, 'Book Successfully Deleted');
     }
 
+    public function test_delete_with_shelf_context_returns_to_shelf_view_after_delete()
+    {
+        $shelf = $this->entities->shelfHasBooks();
+        /** @var Book $book */
+        $book = $shelf->books()->first();
+
+        $this->asEditor()->get($shelf->getUrl());
+        $this->get($book->getUrl());
+        $this->get($book->getUrl('/delete'));
+        $resp = $this->delete($book->getUrl());
+
+        $resp->assertRedirect($shelf->getUrl());
+    }
+
     public function test_cancel_on_create_page_leads_back_to_books_listing()
     {
         $resp = $this->asEditor()->get('/create-book');
