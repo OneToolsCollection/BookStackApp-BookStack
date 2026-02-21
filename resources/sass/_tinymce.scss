@@ -205,9 +205,8 @@ body.page-content.mce-content-body  {
 }
 
 /**
- * Set correct cursor for drawio
+ * Ensure cursor indicates that drawings are clickable
  */
-
 .page-content.mce-content-body [drawio-diagram] {
   cursor: pointer;
 }
