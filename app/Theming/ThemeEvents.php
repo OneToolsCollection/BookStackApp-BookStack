@@ -88,6 +88,17 @@ class ThemeEvents
     const COMMONMARK_ENVIRONMENT_CONFIGURE = 'commonmark_environment_configure';
 
     /**
+     * OIDC auth pre-redirect event.
+     * Runs just before BookStack redirects the user to the identity provider for authentication.
+     * Provides the redirect URL that will be used.
+     * If the listener returns a string value, that will be used as the redirect URL instead.
+     *
+     * @param string $redirectUrl
+     * @return string|null
+     */
+    const OIDC_AUTH_PRE_REDIRECT = 'oidc_auth_pre_redirect';
+
+    /**
      * OIDC ID token pre-validate event.
      * Runs just before BookStack validates the user ID token data upon login.
      * Provides the existing found set of claims for the user as a key-value array,
