@@ -112,6 +112,31 @@ class ThemeEvents
     const OIDC_ID_TOKEN_PRE_VALIDATE = 'oidc_id_token_pre_validate';
 
     /**
+     * Page content post-render event.
+     * Runs after any display rendering of page content, typically when page content is being processed for viewing.
+     * Rendering typically includes parsing of page includes, and content filtering.
+     * Provides the HTML content about to be shown, along with the related page instance.
+     * If the listener returns a string value, that will be used as the HTML content instead.
+     *
+     * @param string $html
+     * @param \BookStack\Entities\Models\Page $page
+     * @return string|null
+     */
+    const PAGE_CONTENT_POST_RENDER = 'page_content_post_render';
+
+    /**
+     * Page content pre-store event.
+     * Runs just before page HTML is stored in the database, after BookStack's own processing.
+     * Provides the HTML content about to be stored, along with the related page instance.
+     * If the listener returns a string value, that will be used as the HTML content instead.
+     *
+     * @param string $html
+     * @param \BookStack\Entities\Models\Page $page
+     * @return string|null
+     */
+    const PAGE_CONTENT_PRE_STORE = 'page_content_pre_store';
+
+    /**
      * Page include parse event.
      * Runs when a page include tag is being parsed, typically when page content is being processed for viewing.
      * Provides the "include tag" reference string, the default BookStack replacement content for the tag,
