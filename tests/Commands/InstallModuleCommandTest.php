@@ -15,6 +15,8 @@ class InstallModuleCommandTest extends TestCase
             $zip = $this->getModuleZipPath();
             $expectedInstallPath = theme_path('modules/test-module');
             $this->artisan('bookstack:install-module', ['location' => $zip])
+                ->expectsOutput("\nThis will install a module from: {$zip}\n\nModules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.")
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
                 ->expectsOutput('Module "Test Module" (v1.0.0) successfully installed!')
                 ->expectsOutput("Install location: {$expectedInstallPath}")
                 ->assertExitCode(0);
@@ -35,7 +37,7 @@ class InstallModuleCommandTest extends TestCase
             $expectedInstallPath = theme_path('modules/test-module');
 
             $this->artisan('bookstack:install-module', ['location' => 'https://example.com/test-module.zip'])
-                ->expectsOutput("This will download a module from example.com. Modules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.")
+                ->expectsOutput("\nThis will download a module from: example.com\n\nModules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.")
                 ->expectsConfirmation('Are you sure you trust this source?', 'yes')
                 ->expectsOutput('Module "Test Module" (v1.0.0) successfully installed!')
                 ->expectsOutput("Install location: {$expectedInstallPath}")
@@ -61,7 +63,7 @@ class InstallModuleCommandTest extends TestCase
             $expectedInstallPath = theme_path('modules/test-module');
 
             $this->artisan('bookstack:install-module', ['location' => 'http://example.com/test-module.zip'])
-                ->expectsOutput("This will download a module from example.com. Modules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.")
+                ->expectsOutput("\nThis will download a module from: example.com\n\nModules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.")
                 ->expectsConfirmation('Are you sure you trust this source?', 'yes')
                 ->expectsOutput("You are downloading a module from an insecure HTTP source.\nWe recommend only using HTTPS sources to avoid various security risks.")
                 ->expectsConfirmation('Are you sure you want to continue without HTTPS?', 'yes')
@@ -142,6 +144,7 @@ class InstallModuleCommandTest extends TestCase
         file_put_contents($zip, 'invalid zip');
 
         $this->artisan('bookstack:install-module', ['location' => $zip])
+            ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
             ->expectsOutput("ERROR: Cannot open ZIP file at {$zip}")
             ->assertExitCode(1);
     }
@@ -153,6 +156,7 @@ class InstallModuleCommandTest extends TestCase
         ]);
 
         $this->artisan('bookstack:install-module', ['location' => $zip])
+            ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
             ->expectsOutput("ERROR: Module ZIP file contents are too large. Maximum size is 50MB")
             ->assertExitCode(1);
     }
@@ -166,6 +170,7 @@ class InstallModuleCommandTest extends TestCase
         ]);
 
         $this->artisan('bookstack:install-module', ['location' => $zip])
+            ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
             ->expectsOutput("ERROR: Failed to read module metadata with error: Module in folder \"_temp\" has an invalid 'version' format. Expected semantic version format like '1.0.0' or 'v1.0.0'")
             ->assertExitCode(1);
     }
@@ -177,6 +182,7 @@ class InstallModuleCommandTest extends TestCase
         File::deleteDirectory($expectedThemePath);
 
         $this->artisan('bookstack:install-module', ['location' => $zip])
+            ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
             ->expectsConfirmation('No active theme folder found, would you like to create one?', 'yes')
             ->expectsOutput("Created theme folder at {$expectedThemePath}")
             ->expectsOutput("You will need to set APP_THEME=custom in your BookStack env configuration to enable this theme!")
@@ -195,6 +201,7 @@ class InstallModuleCommandTest extends TestCase
             File::put(theme_path('modules'), '{}');
 
             $this->artisan('bookstack:install-module', ['location' => $zip])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
                 ->expectsOutput("ERROR: Cannot create a modules folder, file already exists at " . theme_path('modules'))
                 ->assertExitCode(1);
         });
@@ -207,6 +214,7 @@ class InstallModuleCommandTest extends TestCase
             $new = $this->getModuleZipPath(['name' => 'Test Module', 'description' => '', 'version' => '2.0.0']);
 
             $this->artisan('bookstack:install-module', ['location' => $new])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
                 ->expectsOutput('The following modules already exist with the same name:')
                 ->expectsOutput('Test Module (test-module:v1.0.0) - cat')
                 ->expectsChoice('What would you like to do?', 'Replace existing module', ['Cancel module install', 'Add alongside existing module', 'Replace existing module'])
@@ -226,6 +234,7 @@ class InstallModuleCommandTest extends TestCase
             $new = $this->getModuleZipPath(['name' => 'Test Module', 'description' => '', 'version' => '2.0.0']);
 
             $this->artisan('bookstack:install-module', ['location' => $new])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
                 ->expectsOutput('The following modules already exist with the same name:')
                 ->expectsOutput('Test Module (test-module:v1.0.0) - cat')
                 ->expectsChoice('What would you like to do?', 'Cancel module install', ['Cancel module install', 'Add alongside existing module', 'Replace existing module'])
@@ -244,6 +253,7 @@ class InstallModuleCommandTest extends TestCase
             $new = $this->getModuleZipPath(['name' => 'Test Module', 'description' => '', 'version' => '2.0.0']);
 
             $this->artisan('bookstack:install-module', ['location' => $new])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
                 ->expectsOutput('The following modules already exist with the same name:')
                 ->expectsOutput('Test Module (test-module:v1.0.0) - cat')
                 ->expectsChoice('What would you like to do?', 'Add alongside existing module', ['Cancel module install', 'Add alongside existing module', 'Replace existing module'])

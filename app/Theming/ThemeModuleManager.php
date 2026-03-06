@@ -44,7 +44,7 @@ class ThemeModuleManager
      */
     public function addFromZip(string $name, ThemeModuleZip $zip): ThemeModule
     {
-        $baseFolderName = Str::limit(Str::slug($name), 20);
+        $baseFolderName = Str::limit(Str::slug($name), 40, '');
         $folderName = $baseFolderName;
         while (!$baseFolderName || file_exists($this->modulesFolderPath . DIRECTORY_SEPARATOR . $folderName)) {
             $folderName = ($baseFolderName ?: 'mod') . '-' . Str::random(4);

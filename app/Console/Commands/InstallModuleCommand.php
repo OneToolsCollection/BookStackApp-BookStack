@@ -268,7 +268,7 @@ class InstallModuleCommand extends Command
         if ($isRemote) {
             // Warning about fetching from source
             $host = parse_url($location, PHP_URL_HOST);
-            $this->warn("This will download a module from {$host}. Modules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.");
+            $this->warn("\nThis will download a module from: {$host}\n\nModules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.");
             $trustHost = $this->confirm('Are you sure you trust this source?');
             if (!$trustHost) {
                 return null;
@@ -286,10 +286,17 @@ class InstallModuleCommand extends Command
             return $this->downloadModuleFile($location);
         }
 
-        // Validate file and get full location
+        // Validate the file and get the full location
         $zipPath = realpath($location);
+
         if (!$zipPath || !is_file($zipPath)) {
             $this->error("ERROR: Module file not found at {$location}");
+            return null;
+        }
+
+        $this->warn("\nThis will install a module from: {$zipPath}\n\nModules can contain code which would have the ability to do anything on the BookStack host server.\nYou should only install modules from trusted sources.");
+        $trustHost = $this->confirm('Are you sure you want to install this module?');
+        if (!$trustHost) {
             return null;
         }
 
