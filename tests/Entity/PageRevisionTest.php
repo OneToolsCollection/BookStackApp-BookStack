@@ -229,7 +229,20 @@ class PageRevisionTest extends TestCase
         $html->assertElementContains('.item-list > .item-list-row:nth-child(2)', 'Changes');
     }
 
-    public function test_page_changes_view_filters_html_content()
+    public function test_revision_changes_view_shows_diff()
+    {
+        $this->asEditor();
+        $page = $this->entities->page();
+        $this->createRevisions($page, 1, ['name' => 'updated page', 'html' => '<p id="bkmrk-hello">Hello there dog</p>']);
+        $this->createRevisions($page, 1, ['name' => 'updated page', 'html' => '<p id="bkmrk-hello">Hello there cat</p>']);
+
+        $pageRevision = $page->revisions()->orderBy('id', 'desc')->first();
+        $revisionView = $this->get("{$page->getUrl()}/revisions/{$pageRevision->id}/changes");
+        $revisionView->assertStatus(200);
+        $revisionView->assertSee('<p id="bkmrk-hello">Hello there <del class="diffmod">dog</del><ins class="diffmod">cat</ins></p>', false);
+    }
+
+    public function test_revision_changes_view_filters_html_content()
     {
         $this->asEditor();
         $page = $this->entities->page();
@@ -237,7 +250,7 @@ class PageRevisionTest extends TestCase
         $this->createRevisions($page, 1, ['name' => 'updated page', 'html' => $html]);
         $this->createRevisions($page, 1, ['name' => 'updated page', 'html' => $html]);
 
-        $pageRevision = $page->revisions->last();
+        $pageRevision = $page->revisions()->orderBy('id', 'desc')->first();
         $revisionView = $this->get("{$page->getUrl()}/revisions/{$pageRevision->id}/changes");
         $revisionView->assertStatus(200);
         $revisionView->assertSee('expectthisthough');
