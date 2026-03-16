@@ -14,7 +14,7 @@ class MarkdownExportTest extends TestCase
         $resp = $this->asEditor()->get($page->getUrl('/export/markdown'));
         $resp->assertStatus(200);
         $resp->assertSee($page->name);
-        $resp->assertHeader('Content-Disposition', 'attachment; filename="' . $page->slug . '.md"');
+        $resp->assertHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'' . $page->slug . '.md');
     }
 
     public function test_page_markdown_export_uses_existing_markdown_if_apparent()
