@@ -64,6 +64,11 @@ body.export-format-pdf {
   font-size: 14px;
   line-height: 1.2;
 
+  // Ensure heading glyph coverage for PDF engines that don't handle CSS vars well.
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DejaVu Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Roboto", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
   }
