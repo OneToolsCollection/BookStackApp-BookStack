@@ -175,6 +175,35 @@ class InstallModuleCommandTest extends TestCase
             ->assertExitCode(1);
     }
 
+    public function test_module_zip_when_files_in_nested_directory()
+    {
+        $this->usingThemeFolder(function ($themeFolder) {
+            $zip = new ZipArchive();
+            $zipFile = tempnam(sys_get_temp_dir(), 'bs-test-module');
+            $zip->open($zipFile, ZipArchive::CREATE);
+
+            $zip->addEmptyDir('mod');
+            $zip->addFromString('mod/bookstack-module.json', json_encode($metadata ?? [
+                'name' => 'Test Module',
+                'description' => 'A test module for BookStack',
+                'version' => '1.0.0',
+            ]));
+            $zip->addFromString('mod/functions.php', '<?php $a = "cat";');
+            $zip->addEmptyDir('mod/a');
+            $zip->addFromString('mod/a/cat.txt', 'Meow');
+            $zip->close();
+
+            $this->artisan('bookstack:install-module', ['location' => $zipFile])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
+                ->assertExitCode(0);
+
+            $modulePath = glob(theme_path('modules/*'), GLOB_ONLYDIR)[0];
+            $this->assertFileExists($modulePath . '/a/cat.txt');
+            $contents = file_get_contents($modulePath . '/a/cat.txt');
+            $this->assertEquals('Meow', $contents);
+        });
+    }
+
     public function test_local_module_install_without_active_theme_can_setup_theme_folder()
     {
         $zip = $this->getModuleZipPath();
