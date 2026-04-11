@@ -96,22 +96,68 @@ class InstallModuleCommandTest extends TestCase
         });
     }
 
-    public function test_remote_module_install_does_not_follow_redirects_to_different_origin()
+    public function test_remote_module_install_prompts_on_following_redirects_to_different_origin()
     {
         $this->usingThemeFolder(function () {
             $zip = $this->getModuleZipPath();
 
             $http = $this->mockHttpClient([
                 new Response(302, ['Location' => 'http://example.com/a-test-module.zip']),
+                new Response(301, ['Location' => 'https://a.example.com:8080/a-test-module.zip']),
                 new Response(200, ['Content-Length' => filesize($zip)], file_get_contents($zip))
             ]);
 
             $this->artisan('bookstack:install-module', ['location' => 'https://example.com/test-module.zip'])
                 ->expectsConfirmation('Are you sure you trust this source?', 'yes')
+                ->expectsOutput('The download URL is redirecting to a different site: http://example.com')
+                ->expectsConfirmation('Do you trust downloading the module from this site?', 'yes')
+                ->expectsOutput('The download URL is redirecting to a different site: https://a.example.com:8080')
+                ->expectsConfirmation('Do you trust downloading the module from this site?', 'yes')
+                ->assertExitCode(0);
+
+            $this->assertEquals(3, $http->requestCount());
+            $this->assertEquals('https', $http->requestAt(0)->getUri()->getScheme());
+            $this->assertEquals('http', $http->requestAt(1)->getUri()->getScheme());
+            $this->assertEquals('a.example.com', $http->requestAt(2)->getUri()->getHost());
+        });
+    }
+
+    public function test_remote_module_install_redirect_origin_prompt_rejection()
+    {
+        $this->usingThemeFolder(function () {
+            $http = $this->mockHttpClient([
+                new Response(302, ['Location' => 'http://example.com/a-test-module.zip']),
+                new Response(301, ['Location' => 'https://a.example.com:8080/a-test-module.zip']),
+            ]);
+
+            $this->artisan('bookstack:install-module', ['location' => 'https://example.com/test-module.zip'])
+                ->expectsConfirmation('Are you sure you trust this source?', 'yes')
+                ->expectsOutput('The download URL is redirecting to a different site: http://example.com')
+                ->expectsConfirmation('Do you trust downloading the module from this site?', 'no')
                 ->assertExitCode(1);
 
             $this->assertEquals(1, $http->requestCount());
             $this->assertEquals('https', $http->requestAt(0)->getUri()->getScheme());
+        });
+    }
+
+    public function test_remote_module_install_has_redirect_limit()
+    {
+        $this->usingThemeFolder(function () {
+            $http = $this->mockHttpClient([
+                new Response(302, ['Location' => 'https://example.com/a-test-module.zip']),
+                new Response(302, ['Location' => 'https://example.com/b-test-module.zip']),
+                new Response(302, ['Location' => 'https://example.com/c-test-module.zip']),
+                new Response(302, ['Location' => 'https://example.com/d-test-module.zip']),
+            ]);
+
+            $this->artisan('bookstack:install-module', ['location' => 'https://example.com/test-module.zip'])
+                ->expectsConfirmation('Are you sure you trust this source?', 'yes')
+                ->expectsOutput('ERROR: Failed to download module from https://example.com/test-module.zip')
+                ->assertExitCode(1);
+
+            $this->assertEquals(4, $http->requestCount());
+            $this->assertEquals('/c-test-module.zip', $http->requestAt(3)->getUri()->getPath());
         });
     }
 
