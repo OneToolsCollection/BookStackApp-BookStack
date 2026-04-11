@@ -2,6 +2,7 @@
 
 namespace BookStack\Theming;
 
+use BookStack\Util\FilePathNormalizer;
 use ZipArchive;
 
 readonly class ThemeModuleZip
@@ -33,7 +34,12 @@ readonly class ThemeModuleZip
                 $name = str_replace($prefix, '', $name);
             }
 
-            $targetPath = $destinationPath . DIRECTORY_SEPARATOR . $name;
+            try {
+                $targetPath = $destinationPath . DIRECTORY_SEPARATOR . FilePathNormalizer::normalize($name);
+            } catch (\Exception $exception) {
+                throw new ThemeModuleException("Bad file path found in module ZIP file: {$name}");
+            }
+
             $targetPathDir = dirname($targetPath);
             if (!is_dir($targetPathDir)) {
                 $dirCreated = mkdir($targetPathDir, 0777, true);

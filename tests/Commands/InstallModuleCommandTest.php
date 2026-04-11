@@ -250,6 +250,23 @@ class InstallModuleCommandTest extends TestCase
         });
     }
 
+    public function test_module_install_negates_zip_slip()
+    {
+        $this->usingThemeFolder(function () {
+            $zip = $this->getModuleZipPath(null, [
+                '../parent.txt' => str_repeat('dog', 10)
+            ]);
+
+            $expectedInstallPath = theme_path('modules/test-module');
+            $this->artisan('bookstack:install-module', ['location' => $zip])
+                ->expectsConfirmation('Are you sure you want to install this module?', 'yes')
+                ->expectsOutput("ERROR: Failed to install module with error: Failed to load extract files from module ZIP with error: Bad file path found in module ZIP file: ../parent.txt")
+                ->assertExitCode(1);
+
+            $this->assertDirectoryDoesNotExist($expectedInstallPath);
+        });
+    }
+
     public function test_local_module_install_without_active_theme_can_setup_theme_folder()
     {
         $zip = $this->getModuleZipPath();
