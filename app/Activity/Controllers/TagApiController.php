@@ -8,6 +8,12 @@ use BookStack\Activity\TagRepo;
 use BookStack\Http\ApiController;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Endpoints to query data about tags in the system.
+ * You'll only see results based on tags applied to content you have access to.
+ * There are no general create/update/delete endpoints here since tags do not exist
+ * by themselves, they are managed via the items they are assigned to.
+ */
 class TagApiController extends ApiController
 {
     public function __construct(
@@ -17,7 +23,6 @@ class TagApiController extends ApiController
 
     /**
      * Get a list of tag names used in the system.
-     * You'll only see results based on tags applied to content you have access to.
      * Only the name field can be used in filters.
      */
     public function listNames(): JsonResponse
@@ -33,8 +38,7 @@ class TagApiController extends ApiController
     }
 
     /**
-     * Get a list of tag values used in the system, which have been used for the given tag name.
-     * You'll only see results based on tags applied to content you have access to.
+     * Get a list of tag values, which have been set for the given tag name.
      * Only the value field can be used in filters.
      */
     public function listValues(string $name): JsonResponse
