@@ -7,6 +7,7 @@ namespace BookStack\Activity\Controllers;
 use BookStack\Activity\TagRepo;
 use BookStack\Http\ApiController;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Endpoints to query data about tags in the system.
@@ -19,6 +20,15 @@ class TagApiController extends ApiController
     public function __construct(
         protected TagRepo $tagRepo,
     ) {
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'listValues' => [
+                'name' => ['required', 'string'],
+            ],
+        ];
     }
 
     /**
@@ -38,18 +48,21 @@ class TagApiController extends ApiController
     }
 
     /**
-     * Get a list of tag values, which have been set for the given tag name.
+     * Get a list of tag values, which have been set for the given tag name,
+     * which must be provided as a query parameter on the request.
      * Only the value field can be used in filters.
      */
-    public function listValues(string $name): JsonResponse
+    public function listValues(Request $request): JsonResponse
     {
-        $tagQuery = $this->tagRepo
-            ->queryWithTotalsForApi($name);
+        $data = $this->validate($request, $this->rules()['listValues']);
+        $name = $data['name'];
+
+        $tagQuery = $this->tagRepo->queryWithTotalsForApi($name);
 
         return $this->apiListingResponse($tagQuery, [
             'name', 'value', 'usages', 'page_count', 'chapter_count', 'book_count', 'shelf_count',
         ], [], [
-            'name', 'value',
+            'value',
         ]);
     }
 }

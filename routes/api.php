@@ -111,7 +111,7 @@ Route::get('search', [SearchApiController::class, 'all']);
 Route::get('system', [SystemApiController::class, 'read']);
 
 Route::get('tags/names', [TagApiController::class, 'listNames']);
-Route::get('tags/name/{name}/values', [TagApiController::class, 'listValues']);
+Route::get('tags/values-for-name', [TagApiController::class, 'listValues']);
 
 Route::get('users', [UserApiController::class, 'list']);
 Route::post('users', [UserApiController::class, 'create']);

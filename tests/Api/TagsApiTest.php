@@ -76,7 +76,7 @@ class TagsApiTest extends TestCase
         $booksToTag->each(fn (Book $book) => $book->tags()->save(new Tag(['name' => 'MyValueApiTag', 'value' => 'tag-book' . $book->id])));
         $chaptersToTag->each(fn (Chapter $chapter) => $chapter->tags()->save(new Tag(['name' => 'MyValueApiTag', 'value' => 'tag-chapter' . $chapter->id])));
 
-        $resp = $this->actingAsApiEditor()->getJson('api/tags/name/MyValueApiTag/values');
+        $resp = $this->actingAsApiEditor()->getJson('api/tags/values-for-name?name=MyValueApiTag');
 
         $resp->assertStatus(200);
         $resp->assertJson(['total' => 18]);
@@ -101,7 +101,7 @@ class TagsApiTest extends TestCase
         $this->permissions->disableEntityInheritedPermissions($pagesToTag[3]);
         $this->permissions->disableEntityInheritedPermissions($pagesToTag[6]);
 
-        $resp = $this->actingAsApiEditor()->getJson('api/tags/name/MyGreatApiTag/values');
+        $resp = $this->actingAsApiEditor()->getJson('api/tags/values-for-name?name=MyGreatApiTag');
         $resp->assertStatus(200);
         $resp->assertJson(['total' => 8]);
         $resp->assertJsonMissing(['value' => 'cat' . $pagesToTag[3]->id]);
