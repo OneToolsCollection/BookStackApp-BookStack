@@ -24,7 +24,7 @@ return new class extends Migration
                 'page-view-all',
             ])->get();
 
-        if (!$pageViewPermissions->count() === 0) {
+        if ($pageViewPermissions->count() === 0) {
             return;
         }
 

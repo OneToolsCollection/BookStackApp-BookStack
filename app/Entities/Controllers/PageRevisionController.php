@@ -134,8 +134,8 @@ class PageRevisionController extends Controller
      */
     public function restore(string $bookSlug, string $pageSlug, int $revisionId)
     {
-        $page = $this->pageQueries->findVisibleBySlugsOrFail($bookSlug, $pageSlug);
         $this->checkPermission(Permission::RevisionViewAll);
+        $page = $this->pageQueries->findVisibleBySlugsOrFail($bookSlug, $pageSlug);
         $this->checkOwnablePermission(Permission::PageUpdate, $page);
 
         $page = $this->pageRepo->restoreRevision($page, $revisionId);
@@ -150,8 +150,8 @@ class PageRevisionController extends Controller
      */
     public function destroy(string $bookSlug, string $pageSlug, int $revId)
     {
-        $page = $this->pageQueries->findVisibleBySlugsOrFail($bookSlug, $pageSlug);
         $this->checkPermission(Permission::RevisionViewAll);
+        $page = $this->pageQueries->findVisibleBySlugsOrFail($bookSlug, $pageSlug);
         $this->checkOwnablePermission(Permission::PageDelete, $page);
 
         $revision = $page->revisions()->where('id', '=', $revId)->first();
