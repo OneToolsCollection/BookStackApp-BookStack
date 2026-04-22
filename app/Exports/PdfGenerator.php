@@ -68,7 +68,6 @@ class PdfGenerator
             $fontMetrics->setFontFamily($fontFamily, $fonts);
         }
 
-//        dd($userFontfamilies, $fontMetrics->getFontFamilies());
         $domPdf->loadHTML($this->convertEntities($html));
         $domPdf->render();
 
