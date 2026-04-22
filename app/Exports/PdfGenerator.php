@@ -65,7 +65,12 @@ class PdfGenerator
         $fontMetrics = $domPdf->getFontMetrics();
         $userFontfamilies = $this->getUserDomPdfFontFamilies();
         foreach ($userFontfamilies as $fontFamily => $fonts) {
-            $fontMetrics->setFontFamily($fontFamily, $fonts);
+            try {
+                $fontMetrics->setFontFamily($fontFamily, $fonts);
+            } catch (\Exception $exception) {
+                $expectedPath = storage_path('fonts/dompdf');
+                throw new PdfExportException("Failed to create required font data in {$expectedPath}, Ensure all content in this location is writable by the web server");
+            }
         }
 
         $domPdf->loadHTML($this->convertEntities($html));
@@ -92,7 +97,11 @@ class PdfGenerator
             if (!file_exists($expectedUfm)) {
                 $font = Font::load($fontFile);
                 $font->parse();
-                $font->saveAdobeFontMetrics($expectedUfm);
+                try {
+                    $font->saveAdobeFontMetrics($expectedUfm);
+                } catch (\Exception $exception) {
+                    throw new PdfExportException("Failed to create required font data at $expectedUfm, Ensure this location is writable by the web server");
+                }
             }
 
             $nameParts = explode('-', $fontFileName);
