@@ -1,14 +1,14 @@
 # BookStack
 
-[![Codeberg release](https://img.shields.io/github/release/BookStackApp/BookStack.svg)](https://github.com/BookStackApp/BookStack/releases/latest)
-[![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/BookStackApp/BookStack/blob/development/LICENSE)
+[![Codeberg release](https://img.shields.io/gitea/v/release/bookstack/bookstack.svg?gitea_url=https://codeberg.org)](https://codeberg.org/bookstack/bookstack/releases/latest)
+[![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://codeberg.org/bookstack/bookstack/src/branch/development/LICENSE)
 [![Crowdin](https://badges.crowdin.net/bookstack/localized.svg)](https://crowdin.com/project/bookstack)
-[![Build Status](https://github.com/BookStackApp/BookStack/workflows/test-php/badge.svg)](https://github.com/BookStackApp/BookStack/actions)
-[![Lint Status](https://github.com/BookStackApp/BookStack/workflows/lint-php/badge.svg)](https://github.com/BookStackApp/BookStack/actions)
+[![Build Status](https://codeberg.org/bookstack/bookstack/badges/workflows/test-php.yml/badge.svg)](https://codeberg.org/bookstack/bookstack/actions?workflow=test-php.yml)
+[![Lint Status](https://codeberg.org/bookstack/bookstack/badges/workflows/lint-php.yml/badge.svg)](https://codeberg.org/bookstack/bookstack/actions?workflow=lint-php.yml)
 [![php-metrics](https://img.shields.io/static/v1?label=Metrics&message=php&color=4F5B93)](https://source.bookstackapp.com/php-stats/index.html)
 <br>
 [![Alternate Source](https://img.shields.io/static/v1?label=Alt+Source&message=Git&color=ef391a&logo=git)](https://source.bookstackapp.com/)
-[![Repo Stats](https://img.shields.io/static/v1?label=GitHub+project&message=stats&color=f27e3f)](https://gh-stats.bookstackapp.com/)
+[![Repo Stats](https://img.shields.io/static/v1?label=Code+Project&message=stats&color=f27e3f)](https://gh-stats.bookstackapp.com/)
 [![Community Discussions](https://img.shields.io/static/v1?label=Community&message=Discussions&color=4d36c4&logo=zulip)](https://community.bookstackapp.com/)
 [![Mastodon](https://img.shields.io/static/v1?label=Mastodon&message=@bookstack&color=595aff&logo=mastodon)](https://www.bookstackapp.com/links/mastodon)
 <br>

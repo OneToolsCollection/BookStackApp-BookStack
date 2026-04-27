@@ -27,10 +27,7 @@ jobs:
           download_translations: true
           localization_branch_name: l10n_development
           create_pull_request: false
-          github_base_url: https://codeberg.org
+          github_base_url: codeberg.org
         env:
-          # A numeric ID, found at https://crowdin.com/project/<projectName>/tools/api
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-
-          # Visit https://crowdin.com/settings#api-key to create this token
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
