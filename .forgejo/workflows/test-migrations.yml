@@ -56,18 +56,18 @@ jobs:
 
       - name: Start migration test
         env:
-          DB_HOST: mysql
+          TEST_DATABASE_URL: 'mysql://bookstack-test:bookstack-test@mysql/bookstack-test'
         run: |
           php${{ matrix.php }} artisan migrate --force -n --database=mysql_testing
 
       - name: Start migration:rollback test
         env:
-          DB_HOST: mysql
+          TEST_DATABASE_URL: 'mysql://bookstack-test:bookstack-test@mysql/bookstack-test'
         run: |
           php${{ matrix.php }} artisan migrate:rollback --force -n --database=mysql_testing
 
       - name: Start migration rerun test
         env:
-          DB_HOST: mysql
+          TEST_DATABASE_URL: 'mysql://bookstack-test:bookstack-test@mysql/bookstack-test'
         run: |
           php${{ matrix.php }} artisan migrate --force -n --database=mysql_testing

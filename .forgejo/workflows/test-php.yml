@@ -56,12 +56,12 @@ jobs:
 
     - name: Migrate and seed the database
       env:
-        DB_HOST: mysql
+        TEST_DATABASE_URL: 'mysql://bookstack-test:bookstack-test@mysql/bookstack-test'
       run: |
         php${{ matrix.php }} artisan migrate --force -n --database=mysql_testing
         php${{ matrix.php }} artisan db:seed --force -n --class=DummyContentSeeder --database=mysql_testing
 
     - name: Run PHP tests
       env:
-        DB_HOST: mysql
+        TEST_DATABASE_URL: 'mysql://bookstack-test:bookstack-test@mysql/bookstack-test'
       run: php${{ matrix.php }} ./vendor/bin/phpunit
