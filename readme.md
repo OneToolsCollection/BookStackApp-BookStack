@@ -1,6 +1,6 @@
 # BookStack
 
-[![GitHub release](https://img.shields.io/github/release/BookStackApp/BookStack.svg)](https://github.com/BookStackApp/BookStack/releases/latest)
+[![Codeberg release](https://img.shields.io/github/release/BookStackApp/BookStack.svg)](https://github.com/BookStackApp/BookStack/releases/latest)
 [![license](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/BookStackApp/BookStack/blob/development/LICENSE)
 [![Crowdin](https://badges.crowdin.net/bookstack/localized.svg)](https://crowdin.com/project/bookstack)
 [![Build Status](https://github.com/BookStackApp/BookStack/workflows/test-php/badge.svg)](https://github.com/BookStackApp/BookStack/actions)
@@ -11,7 +11,6 @@
 [![Repo Stats](https://img.shields.io/static/v1?label=GitHub+project&message=stats&color=f27e3f)](https://gh-stats.bookstackapp.com/)
 [![Community Discussions](https://img.shields.io/static/v1?label=Community&message=Discussions&color=4d36c4&logo=zulip)](https://community.bookstackapp.com/)
 [![Mastodon](https://img.shields.io/static/v1?label=Mastodon&message=@bookstack&color=595aff&logo=mastodon)](https://www.bookstackapp.com/links/mastodon)
-[![Discord](https://img.shields.io/static/v1?label=Discord&message=chat&color=738adb&logo=discord)](https://www.bookstackapp.com/links/discord)
 <br>
 [![PeerTube](https://img.shields.io/static/v1?label=PeerTube&message=bookstack@foss.video&color=f2690d&logo=peertube)](https://foss.video/c/bookstack)
 [![YouTube](https://img.shields.io/static/v1?label=YouTube&message=bookstackapp&color=ff0000&logo=youtube)](https://www.youtube.com/bookstackapp)
@@ -23,7 +22,7 @@ A platform for storing and organising information and documentation. Details for
 * [Demo Instance](https://demo.bookstackapp.com)
 * [Screenshots](https://www.bookstackapp.com/#screenshots) 
 * [BookStack Blog](https://www.bookstackapp.com/blog)
-* [Issue List](https://github.com/BookStackApp/BookStack/issues)
+* [Issue List](https://codeberg.org/bookstack/bookstack/issues)
 * [Community Discussions](https://community.bookstackapp.com/)
 * [Support Options](https://www.bookstackapp.com/support/)
 
@@ -134,7 +133,7 @@ Security information for administering a BookStack instance can be found on the 
 
 If you'd like to be notified of new potential security concerns you can [sign-up to the BookStack security mailing list](https://updates.bookstackapp.com/signup/bookstack-security-updates).
 
-If you would like to report a security concern, details of doing so [can be found here](https://github.com/BookStackApp/BookStack/blob/development/.github/SECURITY.md).
+If you would like to report a security concern, details of doing so [can be found here](/.forgejo/SECURITY.md).
 
 ## ♿ Accessibility
 
@@ -142,7 +141,7 @@ We want BookStack to remain accessible to as many people as possible. We aim for
 
 ## 🖥️ Website, Docs & Blog
 
-The website which contains the project docs & blog can be found in the [BookStackApp/website](https://codeberg.org/bookstack/website) repo.
+The website which contains the project docs & blog can be found in the [bookstack/website](https://codeberg.org/bookstack/website) repo.
 
 ## ⚖️ License
 
