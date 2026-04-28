@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the [latest version](https://github.com/BookStackApp/BookStack/releases) of BookStack is supported.
+Only the [latest version](https://codeberg.org/bookstack/bookstack/releases) of BookStack is supported.
 We generally don't support older versions of BookStack due to maintenance effort and
 since we aim to provide a fairly stable upgrade path for new versions.
 
