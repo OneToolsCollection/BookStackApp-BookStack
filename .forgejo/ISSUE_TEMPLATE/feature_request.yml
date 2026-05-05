@@ -1,6 +1,6 @@
 name: Feature Request
 description: Request a new feature or idea to be added to BookStack
-labels: [":hammer: Feature Request"]
+labels: ["Type/Feature Request"]
 body:
   - type: textarea
     id: description
